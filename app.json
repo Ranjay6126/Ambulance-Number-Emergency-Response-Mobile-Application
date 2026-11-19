@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "SwiftCare",
+    "slug": "swiftcare",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#F7F8FC"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "SwiftCare uses your location to find nearby emergency services."
+      }
+    },
+    "android": {
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
+      "package": "com.swiftcare.emergency"
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
