@@ -1256,3 +1256,100 @@ export function listingLocation(item: AmbulanceListing): string {
 export function countByProvince(province: Province): number {
   return ambulanceDirectory.filter((item) => item.province === province).length;
 }
+
+// ---------------------------------------------------------------------------
+// "Near me" — match the user's GPS position to the closest district
+// ---------------------------------------------------------------------------
+
+export type LatLng = { latitude: number; longitude: number };
+
+/**
+ * Approximate centre of every district that appears in the directory.
+ * Source: SOURCE.geodata. District centres are used because individual wards
+ * and villages do not publish their own ambulance number anywhere; matching to
+ * the district is the finest granularity that is actually published.
+ */
+export const districtCentroids: Record<string, { lat: number; lng: number }> = {
+  // Koshi
+  Taplejung: { lat: 27.61, lng: 87.822 },
+  Panchthar: { lat: 27.149, lng: 87.855 },
+  Ilam: { lat: 26.885, lng: 87.92 },
+  Jhapa: { lat: 26.584, lng: 87.886 },
+  Morang: { lat: 26.611, lng: 87.473 },
+  Sunsari: { lat: 26.641, lng: 87.141 },
+  Dhankuta: { lat: 27.018, lng: 87.313 },
+  Terhathum: { lat: 27.132, lng: 87.524 },
+  Sankhuwasabha: { lat: 27.548, lng: 87.227 },
+  Bhojpur: { lat: 27.175, lng: 87.094 },
+  Solukhumbu: { lat: 27.726, lng: 86.782 },
+  Khotang: { lat: 27.156, lng: 86.681 },
+  Okhaldhunga: { lat: 27.336, lng: 86.448 },
+  Udayapur: { lat: 26.933, lng: 86.52 },
+  // Madhesh
+  Saptari: { lat: 26.607, lng: 86.749 },
+  Siraha: { lat: 26.742, lng: 86.35 },
+  Dhanusha: { lat: 26.851, lng: 86.036 },
+  Mahottari: { lat: 26.885, lng: 85.797 },
+  Sarlahi: { lat: 26.968, lng: 85.564 },
+  Rautahat: { lat: 26.989, lng: 85.283 },
+  Bara: { lat: 27.107, lng: 85.069 },
+  Parsa: { lat: 27.223, lng: 84.827 },
+  // Bagmati
+  Sindhuli: { lat: 27.185, lng: 86.07 },
+  Ramechhap: { lat: 27.537, lng: 86.257 },
+  Dolakha: { lat: 27.824, lng: 86.222 },
+  Sindhupalchok: { lat: 27.907, lng: 85.756 },
+  Kavrepalanchok: { lat: 27.545, lng: 85.624 },
+  Lalitpur: { lat: 27.548, lng: 85.323 },
+  Bhaktapur: { lat: 27.674, lng: 85.426 },
+  Kathmandu: { lat: 27.694, lng: 85.285 },
+  Nuwakot: { lat: 27.926, lng: 85.248 },
+  Rasuwa: { lat: 28.176, lng: 85.479 },
+  Dhading: { lat: 28.008, lng: 84.906 },
+  Makwanpur: { lat: 27.437, lng: 85.053 },
+  Chitwan: { lat: 27.618, lng: 84.453 },
+  // Gandaki
+  Gorkha: { lat: 28.274, lng: 84.841 },
+  Lamjung: { lat: 28.283, lng: 84.42 },
+  Manang: { lat: 28.673, lng: 84.169 },
+  Kaski: { lat: 28.345, lng: 83.971 },
+  Tanahun: { lat: 27.935, lng: 84.223 },
+  Syangja: { lat: 28.045, lng: 83.827 },
+  Parbat: { lat: 28.203, lng: 83.728 },
+  Baglung: { lat: 28.356, lng: 83.143 },
+  Myagdi: { lat: 28.546, lng: 83.463 },
+  Mustang: { lat: 28.948, lng: 83.901 },
+  Nawalpur: { lat: 27.654, lng: 84.031 },
+  // Lumbini
+  Palpa: { lat: 27.81, lng: 83.63 },
+  "Nawalparasi West": { lat: 27.52, lng: 83.737 },
+  Rupandehi: { lat: 27.549, lng: 83.403 },
+  Kapilvastu: { lat: 27.619, lng: 82.982 },
+  Arghakhanchi: { lat: 27.932, lng: 83.146 },
+  Gulmi: { lat: 28.096, lng: 83.329 },
+  Rolpa: { lat: 28.325, lng: 82.644 },
+  Pyuthan: { lat: 28.12, lng: 82.83 },
+  Dang: { lat: 27.98, lng: 82.469 },
+  Banke: { lat: 28.096, lng: 81.773 },
+  Bardiya: { lat: 28.372, lng: 81.45 },
+  // Karnali
+  Salyan: { lat: 28.407, lng: 82.168 },
+  Surkhet: { lat: 28.658, lng: 81.514 },
+  Jajarkot: { lat: 28.869, lng: 82.168 },
+  Dailekh: { lat: 28.885, lng: 81.7 },
+  Dolpa: { lat: 29.214, lng: 83.037 },
+  Jumla: { lat: 29.239, lng: 82.199 },
+  Kalikot: { lat: 29.216, lng: 81.689 },
+  Mugu: { lat: 29.678, lng: 82.531 },
+  Humla: { lat: 30.026, lng: 81.833 },
+  // Sudurpashchim
+  Bajhang: { lat: 29.723, lng: 81.246 },
+  Bajura: { lat: 29.611, lng: 81.577 },
+  Achham: { lat: 29.068, lng: 81.294 },
+  Doti: { lat: 29.188, lng: 80.862 },
+  Kailali: { lat: 28.731, lng: 80.904 },
+  Kanchanpur: { lat: 28.845, lng: 80.283 },
+  Dadeldhura: { lat: 29.209, lng: 80.501 },
+  Baitadi: { lat: 29.508, lng: 80.558 },
+  Darchula: { lat: 29.926, lng: 80.789 },
+};
