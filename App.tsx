@@ -29,6 +29,8 @@ const iconNames: Record<string, keyof typeof Ionicons.glyphMap> = {
   shield: "shield-checkmark-outline",
   search: "search-outline",
   clock: "time-outline",
+  map: "map-outline",
+  directions: "navigate-outline",
 };
 
 function Icon({ name, size = 22, color = "#24334B" }: { name: string; size?: number; color?: string }) {
@@ -55,6 +57,11 @@ export default function App() {
 
   const openSource = (url: string) => {
     Linking.openURL(url).catch(() => Alert.alert("Unable to open source", "Please check your internet connection and try again."));
+  };
+
+  const openMapsSearch = (query: string) => {
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+    Linking.openURL(url).catch(() => Alert.alert("Unable to open maps", "Please check your internet connection and try again."));
   };
 
   const findMyLocation = async () => {
@@ -129,7 +136,7 @@ export default function App() {
                 <Pressable onPress={() => setTab("Ambulances")}><Text style={styles.seeAll}>See all</Text></Pressable>
               </View>
               {ambulanceDirectory.slice(0, 2).map((item) => (
-                <AmbulanceCard key={item.id} item={item} onCall={call} onOpenSource={openSource} />
+                <AmbulanceCard key={item.id} item={item} onCall={call} onOpenSource={openSource} onDirections={openMapsSearch} />
               ))}
 
               <View style={styles.sectionRow}>
@@ -160,7 +167,7 @@ export default function App() {
               ))}
               <Text style={[styles.sectionTitle, { marginTop: 16 }]}>Published local provider contacts</Text>
               {filteredAmbulances.length > 0
-                ? filteredAmbulances.map((item) => <AmbulanceCard key={item.id} item={item} onCall={call} onOpenSource={openSource} />)
+                ? filteredAmbulances.map((item) => <AmbulanceCard key={item.id} item={item} onCall={call} onOpenSource={openSource} onDirections={openMapsSearch} />)
                 : <Text style={styles.emptyMessage}>No verified provider contact matches this search.</Text>}
             </>
           )}
@@ -168,7 +175,25 @@ export default function App() {
           {tab === "Hospitals" && (
             <>
               <Text style={styles.screenTitle}>Hospital Directory</Text>
-              <Text style={styles.emptyMessage}>Verified hospital contacts have not been added to this directory yet.</Text>
+              <Text style={styles.directoryIntro}>Find a hospital near you using your map app. SwiftCare does not estimate travel time or verify live hospital availability.</Text>
+              <Pressable
+                style={styles.mapCard}
+                onPress={() => openMapsSearch(`hospitals near ${location ? `${location.latitude},${location.longitude}` : "me"}`)}
+                accessibilityRole="button"
+              >
+                <View style={styles.mapIcon}><Icon name="map" size={22} color="#FFFFFF" /></View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.mapTitle}>Hospitals near me</Text>
+                  <Text style={styles.mapSubtitle}>{location ? "Search using your current location" : "Search around your map app's location"}</Text>
+                </View>
+                <Icon name="directions" size={20} color="#D92735" />
+              </Pressable>
+              <View style={styles.coverageNotice}>
+                <Text style={styles.coverageNoticeText}>Hospital phone numbers are not yet verified for this directory. For ambulance dispatch, use a published contact and confirm availability when you call.</Text>
+              </View>
+              <Pressable style={styles.secondaryButton} onPress={() => setTab("Ambulances")}>
+                <Text style={styles.secondaryButtonText}>Browse verified ambulance contacts</Text>
+              </Pressable>
             </>
           )}
 
@@ -207,7 +232,7 @@ export default function App() {
   );
 }
 
-function AmbulanceCard({ item, onCall, onOpenSource }: { item: AmbulanceListing; onCall: (phone: string) => void; onOpenSource: (url: string) => void }) {
+function AmbulanceCard({ item, onCall, onOpenSource, onDirections }: { item: AmbulanceListing; onCall: (phone: string) => void; onOpenSource: (url: string) => void; onDirections: (query: string) => void }) {
   return (
     <View style={styles.ambulanceCard}>
       <View style={styles.ambulanceIcon}><Text style={{ color: "#FFF", fontSize: 20, fontWeight: "900" }}>+</Text></View>
@@ -220,6 +245,7 @@ function AmbulanceCard({ item, onCall, onOpenSource }: { item: AmbulanceListing;
         </Pressable>
       </View>
       <View style={styles.cardActions}>
+        <Pressable style={styles.cardDirections} accessibilityLabel={`Find directions to ${item.name}`} onPress={() => onDirections(item.location)}><Icon name="directions" size={17} color="#26364E" /></Pressable>
         <Pressable style={styles.cardCall} accessibilityLabel={`Call ${item.name} at ${item.phone}`} onPress={() => onCall(item.phone)}><Icon name="phone" size={17} /></Pressable>
         <Text style={styles.phoneNumber}>{item.phone}</Text>
       </View>
@@ -263,6 +289,7 @@ const styles = StyleSheet.create({
   cardMeta: { color: "#8792A4", fontSize: 10, lineHeight: 15, marginTop: 4 },
   cardType: { color: "#D92735", fontSize: 10, fontWeight: "700", lineHeight: 15, marginTop: 4 },
   cardActions: { alignItems: "flex-end", gap: 7 },
+  cardDirections: { width: 34, height: 34, borderRadius: 13, backgroundColor: "#EEF2F7", alignItems: "center", justifyContent: "center" },
   cardCall: { width: 38, height: 38, borderRadius: 14, backgroundColor: "#FDEBED", alignItems: "center", justifyContent: "center" },
   quickGrid: { flexDirection: "row", justifyContent: "space-between" },
   quickAction: { width: "23%", height: 82, borderRadius: 16, backgroundColor: "#FFF", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#EEF0F5" },
@@ -278,6 +305,13 @@ const styles = StyleSheet.create({
   emptyMessage: { color: "#7E8798", fontSize: 13, textAlign: "center", paddingVertical: 20 },
   coverageNotice: { backgroundColor: "#FFF4DD", borderRadius: 14, padding: 12, marginBottom: 12 },
   coverageNoticeText: { color: "#78530D", fontSize: 12, lineHeight: 18 },
+  directoryIntro: { color: "#6E7B8F", fontSize: 13, lineHeight: 20, marginBottom: 16 },
+  mapCard: { minHeight: 84, borderRadius: 18, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E9EDF3", flexDirection: "row", alignItems: "center", padding: 14, marginBottom: 14 },
+  mapIcon: { width: 44, height: 44, borderRadius: 15, backgroundColor: "#26364E", alignItems: "center", justifyContent: "center", marginRight: 12 },
+  mapTitle: { color: "#26364E", fontSize: 14, fontWeight: "800" },
+  mapSubtitle: { color: "#8792A4", fontSize: 11, marginTop: 4 },
+  secondaryButton: { minHeight: 48, borderRadius: 15, backgroundColor: "#FDEBED", alignItems: "center", justifyContent: "center", paddingHorizontal: 16 },
+  secondaryButtonText: { color: "#D92735", fontSize: 13, fontWeight: "800" },
   sourceLink: { color: "#2563A6", fontSize: 11, fontWeight: "700", marginTop: 5 },
   phoneNumber: { color: "#263248", fontSize: 9, fontWeight: "700", marginTop: 2 },
   profileCard: { height: 180, borderRadius: 22, backgroundColor: "#17243A", alignItems: "center", justifyContent: "center", marginBottom: 14 },
