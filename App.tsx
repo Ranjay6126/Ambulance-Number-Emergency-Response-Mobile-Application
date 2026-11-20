@@ -12,6 +12,7 @@ import {
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import * as Location from "expo-location";
 import { ambulanceDirectory, ambulanceShortCode, type AmbulanceListing } from "./ambulanceDirectory";
 
 type Tab = "Home" | "Ambulances" | "Hospitals" | "Profile";
@@ -41,6 +42,8 @@ function Icon({ name, size = 22, color = "#24334B" }: { name: string; size?: num
 export default function App() {
   const [tab, setTab] = useState<Tab>("Home");
   const [ambulanceQuery, setAmbulanceQuery] = useState("");
+  const [location, setLocation] = useState<Location.LocationObjectCoords | null>(null);
+  const [isFindingLocation, setIsFindingLocation] = useState(false);
 
   const filteredAmbulances = ambulanceDirectory.filter((item) =>
     `${item.name} ${item.location} ${item.phone}`.toLowerCase().includes(ambulanceQuery.trim().toLowerCase()),
@@ -52,6 +55,29 @@ export default function App() {
 
   const openSource = (url: string) => {
     Linking.openURL(url).catch(() => Alert.alert("Unable to open source", "Please check your internet connection and try again."));
+  };
+
+  const findMyLocation = async () => {
+    setIsFindingLocation(true);
+    try {
+      const permission = await Location.requestForegroundPermissionsAsync();
+      if (permission.status !== "granted") {
+        Alert.alert("Location permission needed", "Allow location access while using SwiftCare to show your position.");
+        return;
+      }
+
+      const currentPosition = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      setLocation(currentPosition.coords);
+    } catch (error) {
+      Alert.alert(
+        "Unable to get location",
+        error instanceof Error ? error.message : "Check that location services are enabled, then try again.",
+      );
+    } finally {
+      setIsFindingLocation(false);
+    }
   };
 
   return (
@@ -71,13 +97,19 @@ export default function App() {
 
           {tab === "Home" && (
             <>
-              <Pressable style={styles.locationCard} onPress={() => setTab("Ambulances")} accessibilityRole="button">
+              <Pressable style={styles.locationCard} onPress={findMyLocation} accessibilityRole="button" accessibilityLabel="Find my current location">
                 <View style={styles.locationIcon}><Icon name="location" size={20} /></View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.locationLabel}>YOUR AREA</Text>
-                  <Text style={styles.locationText}>Browse emergency services</Text>
+                  <Text style={styles.locationLabel}>{location ? "CURRENT LOCATION" : "YOUR AREA"}</Text>
+                  <Text style={styles.locationText}>
+                    {isFindingLocation
+                      ? "Finding your location..."
+                      : location
+                        ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`
+                        : "Tap to use your current location"}
+                  </Text>
                 </View>
-                <Text style={styles.locationArrow}>›</Text>
+                <Icon name="location" size={19} color={location ? "#2D8A68" : "#8994A6"} />
               </Pressable>
 
               <View style={styles.emergencyCard}>
