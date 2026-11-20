@@ -1353,3 +1353,77 @@ export const districtCentroids: Record<string, { lat: number; lng: number }> = {
   Baitadi: { lat: 29.508, lng: 80.558 },
   Darchula: { lat: 29.926, lng: 80.789 },
 };
+
+const districtProvinceByName: Record<string, Province> = Object.fromEntries(
+  nrcsDistrictChapterRows.map((row) => [row.district, row.province]),
+) as Record<string, Province>;
+
+const EARTH_RADIUS_KM = 6371;
+
+function toRadians(degrees: number): number {
+  return (degrees * Math.PI) / 180;
+}
+
+function distanceKm(from: LatLng, to: { lat: number; lng: number }): number {
+  const dLat = toRadians(to.lat - from.latitude);
+  const dLng = toRadians(to.lng - from.longitude);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRadians(from.latitude)) * Math.cos(toRadians(to.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(a));
+}
+
+export type DistrictDistance = {
+  district: string;
+  province: Province;
+  distanceKm: number;
+};
+
+/** Districts sorted by straight-line distance from the user's position. */
+export function districtsByDistance(coords: LatLng, limit = 3): DistrictDistance[] {
+  return Object.entries(districtCentroids)
+    .map(([district, point]) => ({
+      district,
+      province: districtProvinceByName[district],
+      distanceKm: distanceKm(coords, point),
+    }))
+    .filter((entry) => entry.province !== undefined)
+    .sort((a, b) => a.distanceKm - b.distanceKm)
+    .slice(0, limit);
+}
+
+export type NearbyArea = {
+  district: string;
+  province: Province;
+  distanceKm: number;
+  listings: AmbulanceListing[];
+};
+
+/**
+ * The closest district to the user, with the ambulance numbers that cover it.
+ * Local (municipal / hospital) numbers come first so the most specific line is
+ * on top, followed by the district Red Cross chapter as the always-present
+ * fallback that also covers the villages in the district.
+ */
+export function findNearbyArea(
+  coords: LatLng | null,
+  options: { maxLocal?: number; maxChapters?: number } = {},
+): NearbyArea | null {
+  if (!coords) {
+    return null;
+  }
+  const { maxLocal = 3, maxChapters = 2 } = options;
+  const [closest] = districtsByDistance(coords, 1);
+  if (!closest) {
+    return null;
+  }
+  const inDistrict = ambulanceDirectory.filter((item) => item.district === closest.district);
+  const isChapter = (item: AmbulanceListing) => item.level === "district" || item.level === "province";
+  return {
+    ...closest,
+    listings: [
+      ...inDistrict.filter((item) => !isChapter(item)).slice(0, maxLocal),
+      ...inDistrict.filter(isChapter).slice(0, maxChapters),
+    ],
+  };
+}
