@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   Alert,
   Linking,
-  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -12,19 +11,9 @@ import {
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
+import { ambulanceDirectory, ambulanceShortCode, type AmbulanceListing } from "./ambulanceDirectory";
 
 type Tab = "Home" | "Ambulances" | "Hospitals" | "Profile";
-
-const ambulances = [
-  { id: 1, name: "CityLife Ambulance", distance: "1.2 km", eta: "4 min", phone: "+919876543210", type: "Advanced" },
-  { id: 2, name: "MedSwift Response", distance: "2.4 km", eta: "7 min", phone: "+919876543211", type: "Basic" },
-  { id: 3, name: "SafeRide Emergency", distance: "3.1 km", eta: "9 min", phone: "+919876543212", type: "Advanced" },
-];
-
-const hospitals = [
-  { id: 1, name: "Central Care Hospital", distance: "1.8 km", status: "Open 24/7", phone: "+911122334455" },
-  { id: 2, name: "Apollo Emergency Centre", distance: "3.4 km", status: "Open 24/7", phone: "+911122334466" },
-];
 
 function Icon({ name, size = 22 }: { name: string; size?: number }) {
   const labels: Record<string, string> = {
@@ -36,35 +25,18 @@ function Icon({ name, size = 22 }: { name: string; size?: number }) {
 
 export default function App() {
   const [tab, setTab] = useState<Tab>("Home");
-  const [booking, setBooking] = useState<(typeof ambulances)[0] | null>(null);
-  const [pickup, setPickup] = useState("");
-  const [confirmed, setConfirmed] = useState(false);
   const [ambulanceQuery, setAmbulanceQuery] = useState("");
-  const [hospitalQuery, setHospitalQuery] = useState("");
 
-  const filteredAmbulances = ambulances.filter((item) =>
-    `${item.name} ${item.type}`.toLowerCase().includes(ambulanceQuery.trim().toLowerCase()),
-  );
-  const filteredHospitals = hospitals.filter((item) =>
-    `${item.name} ${item.status}`.toLowerCase().includes(hospitalQuery.trim().toLowerCase()),
+  const filteredAmbulances = ambulanceDirectory.filter((item) =>
+    `${item.name} ${item.location} ${item.phone}`.toLowerCase().includes(ambulanceQuery.trim().toLowerCase()),
   );
 
   const call = (phone: string) => {
     Linking.openURL(`tel:${phone}`).catch(() => Alert.alert("Unable to call", "Please call directly from your phone."));
   };
 
-  const openBooking = (item: (typeof ambulances)[0]) => {
-    setConfirmed(false);
-    setPickup("");
-    setBooking(item);
-  };
-
-  const confirmBooking = () => {
-    if (!pickup.trim()) {
-      Alert.alert("Pickup location needed", "Enter a pickup address or use your current location.");
-      return;
-    }
-    setConfirmed(true);
+  const openSource = (url: string) => {
+    Linking.openURL(url).catch(() => Alert.alert("Unable to open source", "Please check your internet connection and try again."));
   };
 
   return (
@@ -75,20 +47,20 @@ export default function App() {
           <View style={styles.header}>
             <View>
               <Text style={styles.kicker}>GOOD MORNING</Text>
-              <Text style={styles.title}>Stay safe, Aarav</Text>
+              <Text style={styles.title}>Find help in Nepal</Text>
             </View>
             <Pressable style={styles.avatar} onPress={() => setTab("Profile")}>
-              <Text style={styles.avatarText}>A</Text>
+              <Text style={styles.avatarText}>+</Text>
             </Pressable>
           </View>
 
           {tab === "Home" && (
             <>
-              <Pressable style={styles.locationCard} onPress={() => Alert.alert("Location", "Using your current location.")}>
+              <Pressable style={styles.locationCard} onPress={() => setTab("Ambulances")}>
                 <View style={styles.locationIcon}><Icon name="location" size={20} /></View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.locationLabel}>Your location</Text>
-                  <Text style={styles.locationText}>Indira Nagar, Lucknow</Text>
+                  <Text style={styles.locationLabel}>Find services in your area</Text>
+                  <Text style={styles.locationText}>Search by village or municipality</Text>
                 </View>
                 <Text style={styles.locationArrow}>›</Text>
               </Pressable>
@@ -98,18 +70,18 @@ export default function App() {
                   <Text style={styles.phoneGlyph}>☎</Text>
                 </View>
                 <Text style={styles.emergencyTitle}>Emergency Help</Text>
-                <Text style={styles.emergencyText}>Connect with the nearest ambulance immediately</Text>
-                <Pressable style={styles.callButton} onPress={() => call("108")}>
-                  <Text style={styles.callText}>CALL 108</Text>
+                <Text style={styles.emergencyText}>{ambulanceShortCode.coverageNote}</Text>
+                <Pressable style={styles.callButton} accessibilityLabel={`Call ambulance short code ${ambulanceShortCode.number}`} onPress={() => call(ambulanceShortCode.number)}>
+                  <Text style={styles.callText}>CALL {ambulanceShortCode.number}</Text>
                 </Pressable>
               </View>
 
               <View style={styles.sectionRow}>
-                <Text style={styles.sectionTitle}>Nearby ambulances</Text>
+                <Text style={styles.sectionTitle}>Verified ambulance contacts</Text>
                 <Pressable onPress={() => setTab("Ambulances")}><Text style={styles.seeAll}>See all</Text></Pressable>
               </View>
-              {ambulances.slice(0, 2).map((item) => (
-                <AmbulanceCard key={item.id} item={item} onCall={call} onBook={() => openBooking(item)} />
+              {ambulanceDirectory.slice(0, 2).map((item) => (
+                <AmbulanceCard key={item.id} item={item} onCall={call} onOpenSource={openSource} />
               ))}
 
               <View style={styles.sectionRow}>
@@ -117,8 +89,8 @@ export default function App() {
               </View>
               <View style={styles.quickGrid}>
                 <QuickAction icon="hospital" title="Hospitals" onPress={() => setTab("Hospitals")} />
-                <QuickAction icon="phone" title="Emergency" onPress={() => call("112")} />
-                <QuickAction icon="clock" title="My bookings" onPress={() => setTab("Ambulances")} />
+                <QuickAction icon="phone" title="Ambulance" onPress={() => call(ambulanceShortCode.number)} />
+                <QuickAction icon="search" title="Local directory" onPress={() => setTab("Ambulances")} />
                 <QuickAction icon="shield" title="Safety tips" onPress={() => Alert.alert("Safety tips", "Stay calm, check breathing, and share your exact location.")} />
               </View>
             </>
@@ -126,35 +98,29 @@ export default function App() {
 
           {tab === "Ambulances" && (
             <>
-              <Text style={styles.screenTitle}>Find Ambulance</Text>
-              <View style={styles.searchBox}><Icon name="search" /><TextInput value={ambulanceQuery} onChangeText={setAmbulanceQuery} placeholder="Search ambulances or service type" style={styles.searchInput} accessibilityLabel="Search ambulances or service type" /></View>
-              <View style={styles.mapPreview}>
-                <View style={[styles.mapRoad, styles.mapRoadOne]} /><View style={[styles.mapRoad, styles.mapRoadTwo]} />
-                <View style={[styles.mapPin, { left: "28%", top: "42%" }]}><Text style={styles.mapPinText}>+</Text></View>
-                <View style={[styles.mapPin, { left: "66%", top: "26%" }]}><Text style={styles.mapPinText}>+</Text></View>
-                <View style={styles.userPin}><View style={styles.userDot} /></View>
+              <Text style={styles.screenTitle}>Nepal Ambulance Directory</Text>
+              <View style={styles.coverageNotice}>
+                <Text style={styles.coverageNoticeText}>This is not a complete list of Nepal's villages or municipalities. Only contacts with a public source are shown; confirm availability and coverage by phone.</Text>
               </View>
-              <Text style={styles.sectionTitle}>Available nearby</Text>
+              <View style={styles.searchBox}><Icon name="search" /><TextInput value={ambulanceQuery} onChangeText={setAmbulanceQuery} placeholder="Search village, municipality, district or provider" style={styles.searchInput} accessibilityLabel="Search village, municipality, district or provider" /></View>
+              <Text style={styles.sectionTitle}>Published emergency short code: {ambulanceShortCode.number}</Text>
+              <Text style={styles.cardMeta}>{ambulanceShortCode.coverageNote}</Text>
+              {ambulanceShortCode.sources.map((source) => (
+                <Pressable key={source.url} onPress={() => openSource(source.url)}>
+                  <Text style={styles.sourceLink}>Source: {source.name}</Text>
+                </Pressable>
+              ))}
+              <Text style={[styles.sectionTitle, { marginTop: 16 }]}>Published local provider contacts</Text>
               {filteredAmbulances.length > 0
-                ? filteredAmbulances.map((item) => <AmbulanceCard key={item.id} item={item} onCall={call} onBook={() => openBooking(item)} />)
-                : <Text style={styles.emptyMessage}>No ambulances match your search.</Text>}
+                ? filteredAmbulances.map((item) => <AmbulanceCard key={item.id} item={item} onCall={call} onOpenSource={openSource} />)
+                : <Text style={styles.emptyMessage}>No verified provider contact matches this search.</Text>}
             </>
           )}
 
           {tab === "Hospitals" && (
             <>
-              <Text style={styles.screenTitle}>Nearby Hospitals</Text>
-              <View style={styles.searchBox}><Icon name="search" /><TextInput value={hospitalQuery} onChangeText={setHospitalQuery} placeholder="Search hospitals" style={styles.searchInput} accessibilityLabel="Search hospitals" /></View>
-              {filteredHospitals.length > 0 ? filteredHospitals.map((item) => (
-                <View key={item.id} style={styles.hospitalCard}>
-                  <View style={styles.hospitalIcon}><Text style={{ color: "#FFF", fontWeight: "900" }}>H</Text></View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.cardName}>{item.name}</Text>
-                    <Text style={styles.cardMeta}>{item.distance} away  •  {item.status}</Text>
-                  </View>
-                  <Pressable style={styles.smallCall} onPress={() => call(item.phone)}><Icon name="phone" size={18} /></Pressable>
-                </View>
-              )) : <Text style={styles.emptyMessage}>No hospitals match your search.</Text>}
+              <Text style={styles.screenTitle}>Hospital Directory</Text>
+              <Text style={styles.emptyMessage}>Verified hospital contacts have not been added to this directory yet.</Text>
             </>
           )}
 
@@ -162,9 +128,9 @@ export default function App() {
             <>
               <Text style={styles.screenTitle}>Profile</Text>
               <View style={styles.profileCard}>
-                <View style={styles.profileAvatar}><Text style={styles.profileAvatarText}>A</Text></View>
-                <Text style={styles.profileName}>Aarav Sharma</Text>
-                <Text style={styles.profilePhone}>+91 98765 43210</Text>
+                <View style={styles.profileAvatar}><Text style={styles.profileAvatarText}>+</Text></View>
+                <Text style={styles.profileName}>Your profile</Text>
+                <Text style={styles.profilePhone}>Phone number not set</Text>
               </View>
               {["Medical information", "Emergency contacts", "Booking history", "Settings"].map((label) => (
                 <Pressable key={label} style={styles.profileRow} onPress={() => Alert.alert(label, "Demo section")}>
@@ -188,46 +154,26 @@ export default function App() {
           })}
         </View>
 
-        <Modal visible={!!booking} transparent animationType="slide" onRequestClose={() => setBooking(null)}>
-          <View style={styles.modalBackdrop}>
-            <View style={styles.modalSheet}>
-              {confirmed ? (
-                <>
-                  <View style={styles.confirmIcon}><Text style={{ color: "#FFF", fontSize: 30 }}>✓</Text></View>
-                  <Text style={styles.modalTitle}>Ambulance requested</Text>
-                  <Text style={styles.modalText}>{booking?.name} will reach you in approximately {booking?.eta}.</Text>
-                  <Pressable style={styles.modalPrimary} onPress={() => setBooking(null)}><Text style={styles.modalPrimaryText}>Track ambulance</Text></Pressable>
-                </>
-              ) : (
-                <>
-                  <Text style={styles.modalTitle}>Book {booking?.name}</Text>
-                  <Text style={styles.modalText}>Estimated arrival: {booking?.eta}</Text>
-                  <TextInput value={pickup} onChangeText={setPickup} placeholder="Pickup address" style={styles.modalInput} />
-                  <Pressable style={styles.locationButton} onPress={() => setPickup("Indira Nagar, Lucknow")}><Icon name="location" size={18} /><Text style={styles.locationButtonText}>Use current location</Text></Pressable>
-                  <Pressable style={styles.modalPrimary} onPress={confirmBooking}><Text style={styles.modalPrimaryText}>Confirm request</Text></Pressable>
-                  <Pressable style={styles.modalCancel} onPress={() => setBooking(null)}><Text style={styles.modalCancelText}>Cancel</Text></Pressable>
-                </>
-              )}
-            </View>
-          </View>
-        </Modal>
       </SafeAreaView>
     </SafeAreaProvider>
   );
 }
 
-function AmbulanceCard({ item, onCall, onBook }: { item: (typeof ambulances)[0]; onCall: (phone: string) => void; onBook: () => void }) {
+function AmbulanceCard({ item, onCall, onOpenSource }: { item: AmbulanceListing; onCall: (phone: string) => void; onOpenSource: (url: string) => void }) {
   return (
     <View style={styles.ambulanceCard}>
       <View style={styles.ambulanceIcon}><Text style={{ color: "#FFF", fontSize: 20, fontWeight: "900" }}>+</Text></View>
       <View style={{ flex: 1 }}>
         <Text style={styles.cardName}>{item.name}</Text>
-        <Text style={styles.cardMeta}>{item.distance} away • {item.eta} ETA</Text>
-        <Text style={styles.cardType}>{item.type} service</Text>
+        <Text style={styles.cardMeta}>{item.location}</Text>
+        <Text style={styles.cardType}>{item.coverageNote}</Text>
+        <Pressable onPress={() => onOpenSource(item.sourceUrl)}>
+          <Text style={styles.sourceLink}>Source: {item.sourceName}</Text>
+        </Pressable>
       </View>
       <View style={styles.cardActions}>
-        <Pressable style={styles.cardCall} onPress={() => onCall(item.phone)}><Icon name="phone" size={17} /></Pressable>
-        <Pressable style={styles.cardBook} onPress={onBook}><Text style={styles.cardBookText}>Book</Text></Pressable>
+        <Pressable style={styles.cardCall} accessibilityLabel={`Call ${item.name} at ${item.phone}`} onPress={() => onCall(item.phone)}><Icon name="phone" size={17} /></Pressable>
+        <Text style={styles.phoneNumber}>{item.phone}</Text>
       </View>
     </View>
   );
@@ -272,8 +218,6 @@ const styles = StyleSheet.create({
   cardType: { color: "#E93437", fontSize: 10, fontWeight: "700", marginTop: 4 },
   cardActions: { alignItems: "flex-end", gap: 7 },
   cardCall: { width: 34, height: 34, borderRadius: 17, backgroundColor: "#FFF0F0", alignItems: "center", justifyContent: "center" },
-  cardBook: { height: 28, paddingHorizontal: 12, borderRadius: 14, backgroundColor: "#263248", alignItems: "center", justifyContent: "center" },
-  cardBookText: { color: "#FFF", fontSize: 11, fontWeight: "800" },
   quickGrid: { flexDirection: "row", justifyContent: "space-between" },
   quickAction: { width: "23%", height: 82, borderRadius: 16, backgroundColor: "#FFF", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#EEF0F5" },
   quickIcon: { width: 38, height: 38, borderRadius: 19, backgroundColor: "#FFF0F0", alignItems: "center", justifyContent: "center", marginBottom: 6 },
@@ -286,17 +230,10 @@ const styles = StyleSheet.create({
   searchBox: { height: 48, borderRadius: 14, backgroundColor: "#FFF", borderWidth: 1, borderColor: "#EEF0F5", flexDirection: "row", alignItems: "center", paddingHorizontal: 12, marginBottom: 12 },
   searchInput: { flex: 1, height: 48, paddingHorizontal: 8, color: "#263248" },
   emptyMessage: { color: "#7E8798", fontSize: 13, textAlign: "center", paddingVertical: 20 },
-  mapPreview: { height: 210, borderRadius: 20, backgroundColor: "#E9EDF3", overflow: "hidden", marginBottom: 18 },
-  mapRoad: { position: "absolute", width: "130%", height: 18, backgroundColor: "#FFF", transform: [{ rotate: "-20deg" }] },
-  mapRoadOne: { left: -40, top: 76 },
-  mapRoadTwo: { left: -10, top: 145, transform: [{ rotate: "24deg" }] },
-  mapPin: { position: "absolute", width: 36, height: 36, borderRadius: 18, backgroundColor: "#E93437", alignItems: "center", justifyContent: "center" },
-  mapPinText: { color: "#FFF", fontSize: 20, fontWeight: "900" },
-  userPin: { position: "absolute", left: "48%", top: "58%", width: 38, height: 38, borderRadius: 19, backgroundColor: "rgba(55,132,255,0.25)", alignItems: "center", justifyContent: "center" },
-  userDot: { width: 18, height: 18, borderRadius: 9, backgroundColor: "#3784FF", borderWidth: 3, borderColor: "#FFF" },
-  hospitalCard: { minHeight: 82, borderRadius: 16, backgroundColor: "#FFF", flexDirection: "row", alignItems: "center", padding: 12, marginBottom: 10, borderWidth: 1, borderColor: "#EEF0F5" },
-  hospitalIcon: { width: 48, height: 48, borderRadius: 14, backgroundColor: "#263248", alignItems: "center", justifyContent: "center", marginRight: 10 },
-  smallCall: { width: 38, height: 38, borderRadius: 19, backgroundColor: "#FFF0F0", alignItems: "center", justifyContent: "center" },
+  coverageNotice: { backgroundColor: "#FFF4DD", borderRadius: 14, padding: 12, marginBottom: 12 },
+  coverageNoticeText: { color: "#78530D", fontSize: 12, lineHeight: 18 },
+  sourceLink: { color: "#2563A6", fontSize: 11, fontWeight: "700", marginTop: 5 },
+  phoneNumber: { color: "#263248", fontSize: 9, fontWeight: "700", marginTop: 2 },
   profileCard: { height: 180, borderRadius: 20, backgroundColor: "#263248", alignItems: "center", justifyContent: "center", marginBottom: 14 },
   profileAvatar: { width: 70, height: 70, borderRadius: 35, backgroundColor: "#FFF", alignItems: "center", justifyContent: "center" },
   profileAvatarText: { color: "#E93437", fontSize: 24, fontWeight: "900" },
@@ -304,16 +241,4 @@ const styles = StyleSheet.create({
   profilePhone: { color: "#C9CED8", fontSize: 12, marginTop: 4 },
   profileRow: { height: 58, borderRadius: 14, backgroundColor: "#FFF", borderWidth: 1, borderColor: "#EEF0F5", flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 8 },
   profileLabel: { color: "#263248", fontSize: 14, fontWeight: "700" },
-  modalBackdrop: { flex: 1, backgroundColor: "rgba(23,32,51,0.48)", justifyContent: "flex-end" },
-  modalSheet: { backgroundColor: "#FFF", borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, alignItems: "center" },
-  modalTitle: { color: "#172033", fontSize: 20, fontWeight: "900", textAlign: "center" },
-  modalText: { color: "#7E8798", fontSize: 13, textAlign: "center", marginTop: 6, marginBottom: 16 },
-  modalInput: { width: "100%", height: 50, borderRadius: 12, borderWidth: 1, borderColor: "#E4E7ED", paddingHorizontal: 14, marginBottom: 10 },
-  locationButton: { height: 44, width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 10 },
-  locationButtonText: { color: "#263248", fontSize: 13, fontWeight: "700", marginLeft: 6 },
-  modalPrimary: { height: 52, width: "100%", borderRadius: 26, backgroundColor: "#E93437", alignItems: "center", justifyContent: "center" },
-  modalPrimaryText: { color: "#FFF", fontSize: 15, fontWeight: "900" },
-  modalCancel: { height: 44, alignItems: "center", justifyContent: "center" },
-  modalCancelText: { color: "#7E8798", fontWeight: "700" },
-  confirmIcon: { width: 68, height: 68, borderRadius: 34, backgroundColor: "#39A96B", alignItems: "center", justifyContent: "center", marginBottom: 14 },
 });
