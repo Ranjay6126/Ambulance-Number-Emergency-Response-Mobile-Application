@@ -132,10 +132,37 @@ export function openMapsDirections(args: DirectionsArgs): void {
   openUrl(mapsDirectionsUrl(args), "Unable to open maps");
 }
 
-/** Turn device coordinates into the "lat,lng" string Google Maps expects. */
+/** Metres of precision are dropped before a position ever leaves the module. */
+const COORDINATE_PRECISION = 4;
+
+/** True when a position is a real, usable latitude/longitude pair. */
+export function isValidPosition(coords: { latitude: number; longitude: number } | null): boolean {
+  if (!coords || !Number.isFinite(coords.latitude) || !Number.isFinite(coords.longitude)) {
+    return false;
+  }
+  return Math.abs(coords.latitude) <= 90 && Math.abs(coords.longitude) <= 180;
+}
+
+/** Round a position to roughly 11 m, which is all routing and matching need. */
+export function coarsenPosition(coords: { latitude: number; longitude: number }): {
+  latitude: number;
+  longitude: number;
+} {
+  return {
+    latitude: Number(coords.latitude.toFixed(COORDINATE_PRECISION)),
+    longitude: Number(coords.longitude.toFixed(COORDINATE_PRECISION)),
+  };
+}
+
+/**
+ * Turn device coordinates into the "lat,lng" string Google Maps expects.
+ * Invalid positions are ignored rather than passed on, and the value is
+ * coarsened first so a precise fix is never handed to a third party.
+ */
 export function coordsToOrigin(coords: { latitude: number; longitude: number } | null): string | undefined {
-  if (!coords) {
+  if (!isValidPosition(coords) || !coords) {
     return undefined;
   }
-  return `${coords.latitude.toFixed(5)},${coords.longitude.toFixed(5)}`;
+  const { latitude, longitude } = coarsenPosition(coords);
+  return `${latitude},${longitude}`;
 }

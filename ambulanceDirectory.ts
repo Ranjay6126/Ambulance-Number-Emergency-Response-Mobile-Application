@@ -1368,6 +1368,27 @@ const districtProvinceByName: Record<string, Province> = Object.fromEntries(
 
 const EARTH_RADIUS_KM = 6371;
 
+/** Roughly 110 m: enough to pick a district, too coarse to pinpoint a person. */
+const MATCH_PRECISION = 3;
+
+/**
+ * Check a position and drop the unnecessary precision before it is used for
+ * matching, so the app never works with (or keeps) an exact fix.
+ */
+function coarsen(position: LatLng): LatLng | null {
+  const { latitude, longitude } = position;
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return null;
+  }
+  if (Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
+    return null;
+  }
+  return {
+    latitude: Number(latitude.toFixed(MATCH_PRECISION)),
+    longitude: Number(longitude.toFixed(MATCH_PRECISION)),
+  };
+}
+
 function toRadians(degrees: number): number {
   return (degrees * Math.PI) / 180;
 }
@@ -1389,11 +1410,15 @@ export type DistrictDistance = {
 
 /** Districts sorted by straight-line distance from the user's position. */
 export function districtsByDistance(coords: LatLng, limit = 3): DistrictDistance[] {
+  const from = coarsen(coords);
+  if (!from) {
+    return [];
+  }
   return Object.entries(districtCentroids)
     .map(([district, point]) => ({
       district,
       province: districtProvinceByName[district],
-      distanceKm: distanceKm(coords, point),
+      distanceKm: distanceKm(from, point),
     }))
     .filter((entry) => entry.province !== undefined)
     .sort((a, b) => a.distanceKm - b.distanceKm)

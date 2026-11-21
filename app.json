@@ -11,11 +11,11 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "SwiftCare uses your location to find nearby emergency services."
+        "NSLocationWhenInUseUsageDescription": "SwiftCare uses your position only to pick the ambulance numbers published for the district you are in. The position is rounded, stays on this device and is never stored or sent to a server."
       }
     },
     "android": {
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
+      "permissions": ["ACCESS_COARSE_LOCATION"],
       "package": "com.swiftcare.emergency"
     },
     "web": {
