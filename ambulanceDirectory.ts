@@ -140,6 +140,54 @@ const SOURCE = {
     name: "OpenAdminData — Nepal administrative divisions (district coordinates)",
     url: "https://openadmindata.org/np/districts/",
   },
+  emergencynepal: {
+    name: "Tanka Adhikari — आपत्कालीन हेल्पलाइन (emergency helpline directory)",
+    url: "https://tankaadhikari.com.np/emergency.php",
+  },
+  nepmds: {
+    name: "NepMeds — Ambulance list (Nepal)",
+    url: "https://www.nepmeds.com.np/ambulance",
+  },
+  mediciti: {
+    name: "Nepal Mediciti Hospital — Contact",
+    url: "https://www.nepalmediciti.com/contact-mediciti-the-best-hospital-in-kathmandu-nepal",
+  },
+  fishtail: {
+    name: "Fishtail Hospital, Pokhara",
+    url: "https://www.fishtailhospital.com.np/",
+  },
+  caremark: {
+    name: "Caremark Hospital, Lakeside Pokhara",
+    url: "https://caremarkhospitals.com/",
+  },
+  pahsPokhara: {
+    name: "Pokhara Academy of Health Sciences — Western Regional Hospital",
+    url: "https://pahs.gov.np/",
+  },
+  bpkihs: {
+    name: "B. P. Koirala Institute of Health Sciences — Contact",
+    url: "https://www.bpkihs.edu/contact",
+  },
+  ngmc: {
+    name: "Nepalgunj Medical College Teaching Hospital — Contact",
+    url: "https://www.ngmc.edu.np/contact-us",
+  },
+  prabhu: {
+    name: "Prabhu Hospital and Research Center, Birgunj",
+    url: "https://www.prabhuhospital.org/",
+  },
+  phj: {
+    name: "Province Hospital Janakpur — Contact Us",
+    url: "https://phj.p2.gov.np/contact",
+  },
+  karnaliHospital: {
+    name: "Province Hospital, Karnali Province (Surkhet)",
+    url: "https://provincehospital.karnali.gov.np/",
+  },
+  kahs: {
+    name: "Karnali Academy of Health Sciences — Ambulance Services",
+    url: "https://kahs.edu.np/services_ambulance-services",
+  },
 } satisfies Record<string, Source>;
 
 // ---------------------------------------------------------------------------
@@ -1220,6 +1268,293 @@ const nrcsDistrictChapters: AmbulanceListing[] = nrcsDistrictChapterRows.map((ro
 }));
 
 // ---------------------------------------------------------------------------
+// City / hospital ambulance lines
+// These are city, municipality and hospital ambulance lines transcribed
+// digit-for-digit from the cited public pages (each entry links back to the
+// page it was read from). They add the big cities, province capitals and major
+// hospitals beyond the Kathmandu Valley directory above.
+// ---------------------------------------------------------------------------
+
+const cityAmbulanceRows: AmbulanceListing[] = [
+  // ---- Bagmati · Kathmandu -------------------------------------------------
+  {
+    id: "city-shankarapur-hospital",
+    name: "Shankarapur Hospital",
+    phones: ["01-4911032"],
+    district: "Kathmandu",
+    province: "Bagmati",
+    area: "Jorpati, Kathmandu",
+    level: "hospital",
+    source: SOURCE.nepmds,
+  },
+  {
+    id: "city-tuth",
+    name: "Teaching Hospital (TUTH)",
+    phones: ["01-4412303"],
+    district: "Kathmandu",
+    province: "Bagmati",
+    area: "Maharajgunj, Kathmandu",
+    level: "hospital",
+    note: "Tribhuvan University Teaching Hospital switchboard; ask for the ambulance desk.",
+    source: SOURCE.emergencynepal,
+  },
+
+  // ---- Bagmati · Lalitpur --------------------------------------------------
+  {
+    id: "city-nepal-mediciti",
+    name: "Nepal Mediciti Hospital",
+    phones: ["9858777111", "1134"],
+    district: "Lalitpur",
+    province: "Bagmati",
+    area: "Bhaisepati, Lalitpur",
+    level: "hospital",
+    note: "Emergency (24/7) mobile is 9858777111; 1134 is the hospital's emergency short code, reachable only inside Nepal.",
+    source: SOURCE.mediciti,
+  },
+
+  // ---- Bagmati · Chitwan ---------------------------------------------------
+  {
+    id: "city-bharatpur-hospital",
+    name: "Bharatpur Hospital",
+    phones: ["056-527012"],
+    district: "Chitwan",
+    province: "Bagmati",
+    area: "Bharatpur, Chitwan",
+    level: "hospital",
+    source: SOURCE.emergencynepal,
+  },
+  {
+    id: "city-college-medical-sciences-chitwan",
+    name: "College of Medical Sciences",
+    phones: ["056-524260"],
+    district: "Chitwan",
+    province: "Bagmati",
+    area: "Bharatpur, Chitwan",
+    level: "hospital",
+    source: SOURCE.emergencynepal,
+  },
+  {
+    id: "city-chitwan-ambulance",
+    name: "Chitwan Ambulance",
+    phones: ["056-520111"],
+    district: "Chitwan",
+    province: "Bagmati",
+    area: "Bharatpur, Chitwan",
+    level: "community",
+    source: SOURCE.emergencynepal,
+  },
+
+  // ---- Koshi · Morang ------------------------------------------------------
+  {
+    id: "city-koshi-hospital",
+    name: "Koshi Hospital",
+    phones: ["021-525200"],
+    district: "Morang",
+    province: "Koshi",
+    area: "Biratnagar, Morang",
+    level: "hospital",
+    source: SOURCE.emergencynepal,
+  },
+  {
+    id: "city-nobel-medical-college",
+    name: "Nobel Medical College Teaching Hospital",
+    phones: ["021-531500"],
+    district: "Morang",
+    province: "Koshi",
+    area: "Biratnagar, Morang",
+    level: "hospital",
+    source: SOURCE.emergencynepal,
+  },
+  {
+    id: "city-saptakoshi-hospital",
+    name: "Saptakoshi Hospital & Nursing Home",
+    phones: ["9842031637"],
+    district: "Morang",
+    province: "Koshi",
+    area: "Binayak Marg, Biratnagar, Morang",
+    level: "hospital",
+    source: SOURCE.nepmds,
+  },
+  {
+    id: "city-surakhsya-hospital",
+    name: "Surakhsya Hospital",
+    phones: ["9802753797"],
+    district: "Morang",
+    province: "Koshi",
+    area: "Shahid Marg, Biratnagar, Morang",
+    level: "hospital",
+    source: SOURCE.nepmds,
+  },
+
+  // ---- Koshi · Sunsari -----------------------------------------------------
+  {
+    id: "city-bpkihs-dharan",
+    name: "B. P. Koirala Institute of Health Sciences (BPKIHS)",
+    phones: ["025-525555"],
+    district: "Sunsari",
+    province: "Koshi",
+    area: "Ghopa, Dharan, Sunsari",
+    level: "hospital",
+    note: "Institute main switchboard in Dharan; ask to be routed to the emergency / ambulance service.",
+    source: SOURCE.bpkihs,
+  },
+
+  // ---- Gandaki · Kaski -----------------------------------------------------
+  {
+    id: "city-fishtail-hospital",
+    name: "Fishtail Hospital",
+    phones: ["9766610044", "061-578999"],
+    district: "Kaski",
+    province: "Gandaki",
+    area: "Gairapatan, Pokhara, Kaski",
+    level: "hospital",
+    note: "Ambulance line is 9766610044; the emergency reception is 061-578999.",
+    source: SOURCE.fishtail,
+  },
+  {
+    id: "city-caremark-hospital-pokhara",
+    name: "Caremark Hospital",
+    phones: ["9851353499", "061-591441"],
+    district: "Kaski",
+    province: "Gandaki",
+    area: "Lakeside, Pokhara, Kaski",
+    level: "hospital",
+    note: "Ground ambulance is 9851353499; the 24/7 hotline is 061-591441. A heli-rescue number (9851171975) is also published for the Annapurna region.",
+    source: SOURCE.caremark,
+  },
+  {
+    id: "city-pahs-pokhara",
+    name: "Pokhara Academy of Health Sciences — Western Regional Hospital",
+    phones: ["061-520310", "061-520461"],
+    district: "Kaski",
+    province: "Gandaki",
+    area: "Ramghat, Pokhara, Kaski",
+    level: "hospital",
+    source: SOURCE.pahsPokhara,
+  },
+  {
+    id: "city-gandaki-ambulance",
+    name: "Gandaki Ambulance",
+    phones: ["061-520111"],
+    district: "Kaski",
+    province: "Gandaki",
+    area: "Pokhara, Kaski",
+    level: "community",
+    source: SOURCE.emergencynepal,
+  },
+
+  // ---- Lumbini · Rupandehi -------------------------------------------------
+  {
+    id: "city-lumbini-provincial-hospital",
+    name: "Lumbini Provincial Hospital",
+    phones: ["071-520111"],
+    district: "Rupandehi",
+    province: "Lumbini",
+    area: "Butwal, Rupandehi",
+    level: "hospital",
+    source: SOURCE.emergencynepal,
+  },
+  {
+    id: "city-ucms-bhairahawa",
+    name: "Universal College of Medical Sciences",
+    phones: ["071-523700"],
+    district: "Rupandehi",
+    province: "Lumbini",
+    area: "Bhairahawa, Rupandehi",
+    level: "hospital",
+    source: SOURCE.emergencynepal,
+  },
+  {
+    id: "city-lumbini-ambulance",
+    name: "Lumbini Ambulance",
+    phones: ["071-540111"],
+    district: "Rupandehi",
+    province: "Lumbini",
+    area: "Butwal, Rupandehi",
+    level: "community",
+    source: SOURCE.emergencynepal,
+  },
+
+  // ---- Lumbini · Banke -----------------------------------------------------
+  {
+    id: "city-ngmc-kohalpur",
+    name: "Nepalgunj Medical College Teaching Hospital",
+    phones: ["081-540404", "9858025219"],
+    district: "Banke",
+    province: "Lumbini",
+    area: "Das Bigha, Kohalpur, Banke",
+    level: "hospital",
+    note: "Teaching hospital inquiry line is 081-540404; the hospital hotline is 9858025219.",
+    source: SOURCE.ngmc,
+  },
+
+  // ---- Madhesh · Parsa -----------------------------------------------------
+  {
+    id: "city-prabhu-hospital-birgunj",
+    name: "Prabhu Hospital and Research Center",
+    phones: ["051-520259", "9801559811"],
+    district: "Parsa",
+    province: "Madhesh",
+    area: "Barrack Road, Panitanki, Birgunj, Parsa",
+    level: "hospital",
+    note: "24-hour emergency line is 9801559811; the hospital line is 051-520259.",
+    source: SOURCE.prabhu,
+  },
+
+  // ---- Madhesh · Dhanusha --------------------------------------------------
+  {
+    id: "city-province-hospital-janakpur",
+    name: "Province Hospital Janakpur",
+    phones: ["041-526937", "041-520133"],
+    district: "Dhanusha",
+    province: "Madhesh",
+    area: "Hospital Road, Janakpur, Dhanusha",
+    level: "hospital",
+    note: "Emergency number is 041-526937; the office number is 041-520133.",
+    source: SOURCE.phj,
+  },
+
+  // ---- Sudurpashchim · Kailali ---------------------------------------------
+  {
+    id: "city-dhangadhi-redcross",
+    name: "Dhangadhi Red Cross Ambulance",
+    phones: ["9858427770"],
+    district: "Kailali",
+    province: "Sudurpashchim",
+    area: "Tara Nagar, Dhangadhi, Kailali",
+    level: "community",
+    note: "Red Cross ambulance line covering Dhangadhi and Kailali district.",
+    source: SOURCE.nepmds,
+  },
+
+  // ---- Karnali · Surkhet ---------------------------------------------------
+  {
+    id: "city-province-hospital-karnali",
+    name: "Province Hospital, Karnali Province",
+    phones: ["083-520200"],
+    district: "Surkhet",
+    province: "Karnali",
+    area: "Birendranagar-4, Kalagaun, Surkhet",
+    level: "hospital",
+    note: "Emergency (24x7) number of the province hospital at Birendranagar.",
+    source: SOURCE.karnaliHospital,
+  },
+
+  // ---- Karnali · Jumla -----------------------------------------------------
+  {
+    id: "city-kahs-jumla",
+    name: "Karnali Academy of Health Sciences (KAHS)",
+    phones: ["9843736730"],
+    district: "Jumla",
+    province: "Karnali",
+    area: "Chandannath, Jumla",
+    level: "hospital",
+    note: "KAHS 24-hour emergency and ambulance service in Jumla.",
+    source: SOURCE.kahs,
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Combined directory used by the app
 // ---------------------------------------------------------------------------
 
@@ -1233,6 +1568,7 @@ export const ambulanceDirectory: AmbulanceListing[] = auditDirectory([
   ...providerListings,
   ...nrcsProvinceChapters,
   ...nrcsDistrictChapters,
+  ...cityAmbulanceRows,
 ]).kept;
 
 // ---------------------------------------------------------------------------
