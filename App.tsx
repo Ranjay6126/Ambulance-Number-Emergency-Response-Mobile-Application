@@ -3,9 +3,11 @@ import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import * as Location from "expo-location";
-import { colors, radius } from "./theme";
+import { colors, radius, shadow, spacing, typography } from "./theme";
 import { Icon } from "./components/ui";
 import { TABS, type Tab } from "./lib/tabs";
+import { callPhone } from "./lib/links";
+import { nationalAmbulanceNumber } from "./ambulanceDirectory";
 import { HomeScreen } from "./screens/HomeScreen";
 import { DirectoryScreen } from "./screens/DirectoryScreen";
 import { RoutesScreen } from "./screens/RoutesScreen";
@@ -103,17 +105,25 @@ function Shell({
       <StatusBar style="dark" />
 
       <View style={styles.header}>
-        <View>
-          <Text style={styles.kicker}>SWIFTCARE · NEPAL</Text>
-          <Text style={styles.title}>Here when it matters.</Text>
+        <View style={styles.brand}>
+          <View style={styles.brandMark}>
+            <Icon name="ambulance" size={20} color={colors.white} />
+          </View>
+          <View style={styles.brandText}>
+            <Text style={styles.brandName}>SwiftCare</Text>
+            <Text style={styles.brandDesc} numberOfLines={1}>
+              Nepal ambulance & emergency numbers
+            </Text>
+          </View>
         </View>
         <Pressable
-          style={styles.avatar}
-          onPress={() => goTo("Profile")}
+          style={styles.emergencyPill}
+          onPress={() => callPhone(nationalAmbulanceNumber)}
           accessibilityRole="button"
-          accessibilityLabel="Open profile"
+          accessibilityLabel={`Call the national ambulance number ${nationalAmbulanceNumber}`}
         >
-          <Icon name="profile" size={20} color={colors.white} />
+          <Icon name="phone" size={13} color={colors.white} />
+          <Text style={styles.emergencyPillText}>{nationalAmbulanceNumber}</Text>
         </Pressable>
       </View>
 
@@ -134,7 +144,7 @@ function Shell({
         {tab === "Profile" && <ProfileScreen />}
       </View>
 
-      <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, 10) }]}>
+      <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, spacing.sm + 2) }]}>
         {TABS.map((item) => {
           const active = tab === item.key;
           return (
@@ -142,10 +152,13 @@ function Shell({
               key={item.key}
               style={styles.tabItem}
               onPress={() => goTo(item.key)}
-              accessibilityRole="button"
+              accessibilityRole="tab"
+              accessibilityLabel={`${item.label} tab`}
               accessibilityState={{ selected: active }}
             >
-              <Icon name={item.icon} size={21} color={active ? colors.primary : colors.faint} />
+              <View style={[styles.tabIconWrap, active && styles.tabIconWrapActive]}>
+                <Icon name={item.icon} size={20} color={active ? colors.white : colors.faint} />
+              </View>
               <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{item.label}</Text>
             </Pressable>
           );
@@ -157,24 +170,40 @@ function Shell({
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
+
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingTop: 14,
-    paddingBottom: 16,
+    gap: spacing.md,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.lg - 2,
   },
-  kicker: { color: colors.primary, fontSize: 10, fontWeight: "800", letterSpacing: 1.5 },
-  title: { color: colors.ink, fontSize: 23, fontWeight: "800", marginTop: 5, letterSpacing: -0.5 },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.ink,
+  brand: { flexDirection: "row", alignItems: "center", gap: spacing.md, flex: 1 },
+  brandMark: {
+    width: 42,
+    height: 42,
+    borderRadius: radius.md,
+    backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
+  brandText: { flex: 1 },
+  brandName: { color: colors.ink, fontSize: typography.size.xl, fontWeight: typography.weight.black, letterSpacing: typography.letterSpacing.tight },
+  brandDesc: { color: colors.muted, fontSize: typography.size.sm, marginTop: 2 },
+  emergencyPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs + 2,
+    minHeight: 44,
+    paddingHorizontal: spacing.lg - 4,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primary,
+    ...shadow.raised,
+  },
+  emergencyPillText: { color: colors.white, fontSize: typography.size.md, fontWeight: typography.weight.black, letterSpacing: 0.5 },
+
   body: { flex: 1 },
 
   tabBar: {
@@ -182,12 +211,21 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: colors.border,
-    paddingTop: 10,
-    paddingHorizontal: 8,
+    paddingTop: spacing.sm,
+    paddingHorizontal: spacing.sm,
     borderTopLeftRadius: radius.lg,
     borderTopRightRadius: radius.lg,
+    ...shadow.sheet,
   },
-  tabItem: { flex: 1, alignItems: "center", justifyContent: "center" },
-  tabLabel: { color: colors.faint, fontSize: 10.5, marginTop: 4, fontWeight: "600" },
-  tabLabelActive: { color: colors.primary, fontWeight: "800" },
+  tabItem: { flex: 1, minHeight: 48, alignItems: "center", justifyContent: "center", gap: spacing.xxs },
+  tabIconWrap: {
+    width: 52,
+    height: 30,
+    borderRadius: radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  tabIconWrapActive: { backgroundColor: colors.primary },
+  tabLabel: { color: colors.faint, fontSize: typography.size.xs, fontWeight: typography.weight.semibold },
+  tabLabelActive: { color: colors.primary, fontWeight: typography.weight.bold },
 });
