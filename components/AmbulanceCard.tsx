@@ -1,14 +1,8 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { colors, radius } from "../theme";
-import { Icon } from "./ui";
-import {
-  listingLevelLabel,
-  listingLocation,
-  listingNote,
-  primaryPhone,
-  type AmbulanceListing,
-} from "../ambulanceDirectory";
+import { colors, radius, shadow, spacing, typography } from "../theme";
+import { Icon, IconTile, LevelBadge, type Tone } from "./ui";
+import { listingLevelLabel, listingLocation, listingNote, type AmbLevel, type AmbulanceListing } from "../ambulanceDirectory";
 
 type Props = {
   item: AmbulanceListing;
@@ -17,72 +11,78 @@ type Props = {
   onOpenSource: (url: string) => void;
 };
 
+/** Colour of the coverage badge for each administrative level. */
+const LEVEL_TONE: Record<AmbLevel, Tone> = {
+  national: "danger",
+  province: "info",
+  district: "info",
+  municipality: "success",
+  city: "success",
+  hospital: "warning",
+  community: "neutral",
+};
+
 export function AmbulanceCard({ item, onCall, onDirections, onOpenSource }: Props) {
   const level = listingLevelLabel(item);
+  const tone: Tone = item.level ? LEVEL_TONE[item.level] : "neutral";
+
   return (
     <View style={styles.card}>
-      <View style={styles.top}>
-        <View style={styles.badge}>
-          <Text style={styles.badgeMark}>+</Text>
-        </View>
-        <View style={styles.head}>
+      <View style={styles.head}>
+        <IconTile name="ambulance" tone="primary" size={20} />
+        <View style={styles.headText}>
           <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.meta}>
-            {item.area ? `${item.area} · ` : ""}
-            {item.district} · {item.province}
+          <Text style={styles.location} numberOfLines={1}>
+            {listingLocation(item)}
           </Text>
-          {level ? (
-            <View style={styles.levelPill}>
-              <Text style={styles.levelText}>{level}</Text>
-            </View>
-          ) : null}
         </View>
+        {level ? <LevelBadge label={level} tone={tone} /> : null}
       </View>
 
-      <Text style={styles.note}>{listingNote(item)}</Text>
+      <Text style={styles.note} numberOfLines={2}>
+        {listingNote(item)}
+      </Text>
 
       <View style={styles.phones}>
         {item.phones.map((phone) => (
           <Pressable
             key={phone}
             onPress={() => onCall(phone)}
-            style={styles.phonePill}
+            style={styles.phoneRow}
             accessibilityRole="button"
             accessibilityLabel={`Call ${item.name} at ${phone}`}
           >
-            <Icon name="phone" size={14} color={colors.primary} />
-            <Text style={styles.phoneText}>{phone}</Text>
+            <View style={styles.phoneIcon}>
+              <Icon name="phone" size={15} color={colors.primary} />
+            </View>
+            <Text style={styles.phoneNumber}>{phone}</Text>
+            <Text style={styles.phoneAction}>Call</Text>
           </Pressable>
         ))}
       </View>
 
       <View style={styles.actions}>
         <Pressable
-          style={styles.actionGhost}
+          style={styles.routeBtn}
           onPress={() => onDirections(item)}
           accessibilityRole="button"
-          accessibilityLabel={`Road directions to ${item.name}`}
+          accessibilityLabel={`Road directions to ${item.name} in ${item.district}`}
         >
           <Icon name="navigate" size={15} color={colors.inkSoft} />
-          <Text style={styles.actionGhostText}>Route</Text>
+          <Text style={styles.routeText}>Route</Text>
         </Pressable>
         <Pressable
-          style={styles.actionPrimary}
-          onPress={() => onCall(primaryPhone(item))}
-          accessibilityRole="button"
-          accessibilityLabel={`Call ${item.name}`}
+          style={styles.sourceBtn}
+          onPress={() => onOpenSource(item.source.url)}
+          accessibilityRole="link"
+          accessibilityLabel={`Open source page: ${item.source.name}`}
         >
-          <Icon name="phone" size={15} color={colors.white} />
-          <Text style={styles.actionPrimaryText}>Call now</Text>
+          <Icon name="external" size={14} color={colors.link} />
+          <Text style={styles.sourceText} numberOfLines={1}>
+            Source: {item.source.name}
+          </Text>
         </Pressable>
       </View>
-
-      <Pressable onPress={() => onOpenSource(item.source.url)} accessibilityRole="link">
-        <Text style={styles.source} numberOfLines={1}>
-          Source: {item.source.name}
-        </Text>
-      </Pressable>
-      <Text style={styles.verifyHint}>Matches your route: {listingLocation(item)}</Text>
     </View>
   );
 }
@@ -93,69 +93,58 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: 14,
-    marginBottom: 10,
+    padding: spacing.lg - 2,
+    marginBottom: spacing.sm + 2,
+    ...shadow.card,
   },
-  top: { flexDirection: "row", alignItems: "flex-start" },
-  badge: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: colors.primarySoft,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  badgeMark: { color: colors.primary, fontSize: 22, fontWeight: "900", lineHeight: 24 },
-  head: { flex: 1 },
-  name: { color: colors.inkSoft, fontSize: 14, fontWeight: "800" },
-  meta: { color: colors.muted, fontSize: 11, marginTop: 3 },
-  levelPill: {
-    alignSelf: "flex-start",
-    backgroundColor: colors.surfaceAlt,
-    borderRadius: radius.pill,
-    paddingHorizontal: 9,
-    paddingVertical: 3,
-    marginTop: 6,
-  },
-  levelText: { color: colors.inkSoft, fontSize: 10, fontWeight: "800", letterSpacing: 0.3 },
-  note: { color: colors.muted, fontSize: 11, lineHeight: 16, marginTop: 10 },
+  head: { flexDirection: "row", alignItems: "flex-start", gap: spacing.md },
+  headText: { flex: 1 },
+  name: { color: colors.ink, fontSize: typography.size.md, fontWeight: typography.weight.bold, lineHeight: typography.lineHeight.md },
+  location: { color: colors.muted, fontSize: typography.size.sm, marginTop: 3 },
+  note: { color: colors.faint, fontSize: typography.size.sm, lineHeight: typography.lineHeight.sm, marginTop: spacing.sm + 2 },
 
-  phones: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
-  phonePill: {
+  phones: { gap: spacing.sm, marginTop: spacing.md },
+  phoneRow: {
+    minHeight: 46,
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: spacing.md,
+    borderRadius: radius.sm,
     backgroundColor: colors.primaryTint,
+    paddingHorizontal: spacing.md,
+  },
+  phoneIcon: {
+    width: 30,
+    height: 30,
     borderRadius: radius.pill,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-  },
-  phoneText: { color: colors.primary, fontSize: 12.5, fontWeight: "800" },
-
-  actions: { flexDirection: "row", gap: 8, marginTop: 12 },
-  actionGhost: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    borderRadius: radius.sm,
-    backgroundColor: colors.surfaceAlt,
-    paddingHorizontal: 14,
-    minHeight: 38,
-  },
-  actionGhostText: { color: colors.inkSoft, fontSize: 12.5, fontWeight: "800" },
-  actionPrimary: {
-    flex: 1,
-    flexDirection: "row",
+    backgroundColor: colors.white,
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
-    borderRadius: radius.sm,
-    backgroundColor: colors.primary,
-    minHeight: 38,
   },
-  actionPrimaryText: { color: colors.white, fontSize: 12.5, fontWeight: "800" },
+  phoneNumber: { flex: 1, color: colors.primaryDark, fontSize: typography.size.lg, fontWeight: typography.weight.black, letterSpacing: 0.4 },
+  phoneAction: { color: colors.primary, fontSize: typography.size.sm, fontWeight: typography.weight.bold },
 
-  source: { color: colors.link, fontSize: 11, fontWeight: "700", marginTop: 10 },
-  verifyHint: { color: colors.faint, fontSize: 10, marginTop: 4 },
+  actions: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.md },
+  routeBtn: {
+    minHeight: 46,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    borderRadius: radius.sm,
+    backgroundColor: colors.surfaceAlt,
+    paddingHorizontal: spacing.lg,
+  },
+  routeText: { color: colors.inkSoft, fontSize: typography.size.sm, fontWeight: typography.weight.bold },
+  sourceBtn: {
+    flex: 1,
+    minHeight: 46,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    paddingHorizontal: spacing.md,
+  },
+  sourceText: { flex: 1, color: colors.link, fontSize: typography.size.sm, fontWeight: typography.weight.semibold },
 });
