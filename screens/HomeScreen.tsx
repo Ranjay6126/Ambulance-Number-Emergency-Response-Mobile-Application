@@ -1,9 +1,9 @@
 import React from "react";
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import type { LocationObjectCoords } from "expo-location";
-import { colors, radius, shadow } from "../theme";
+import { colors, radius, shadow, spacing, typography } from "../theme";
 import { AmbulanceCard } from "../components/AmbulanceCard";
-import { CallButton, Icon, NoticeCard, SectionHeader, type IconName } from "../components/ui";
+import { ActionButton, CallButton, Icon, IconTile, NoticeCard, Pill, SectionHeader } from "../components/ui";
 import type { Tab } from "../lib/tabs";
 import { callPhone, coordsToOrigin, openMapsDirections, openUrl } from "../lib/links";
 import {
@@ -23,8 +23,8 @@ type Props = {
   onNavigate: (tab: Tab) => void;
 };
 
-/** The three short codes people reach for most often after the ambulance line. */
-const QUICK_CODES = ["100", "101", "103"];
+/** Every national short code except the ambulance line, which gets the hero. */
+const QUICK_NUMBERS = emergencyNumbers.filter((entry) => entry.number !== nationalAmbulanceNumber);
 
 function formatDistance(km: number): string {
   if (km < 1) {
@@ -37,114 +37,115 @@ function formatDistance(km: number): string {
 }
 
 export function HomeScreen({ location, isLocating, locationDenied, onFindLocation, onNavigate }: Props) {
-  const nearbyPreview = ambulanceDirectory.slice(0, 3);
   const origin = coordsToOrigin(location);
   const nearby = findNearbyArea(location);
+  const preview = ambulanceDirectory.slice(0, 2);
 
-  const routeTo = (item: AmbulanceListing) =>
-    openMapsDirections({ destination: listingLocation(item), origin });
-
-  const locationText = isLocating
-    ? "Finding your location..."
-    : nearby
-      ? `${nearby.district}, ${nearby.province} · about ${formatDistance(nearby.distanceKm)} away`
-      : locationDenied
-        ? "Location off — tap to allow"
-        : "Tap to share your location";
+  const routeTo = (item: AmbulanceListing) => openMapsDirections({ destination: listingLocation(item), origin });
 
   return (
     <ScrollView contentContainerStyle={styles.page} showsVerticalScrollIndicator={false}>
-      <Pressable
-        style={styles.locationCard}
-        onPress={onFindLocation}
-        accessibilityRole="button"
-        accessibilityLabel="Find my current location"
-      >
-        <View style={styles.locationIcon}>
-          <Icon name="location" size={20} color={colors.primary} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.locationLabel}>{nearby ? "YOUR AREA" : "LOCATION"}</Text>
-          <Text style={styles.locationText} numberOfLines={1}>
-            {locationText}
-          </Text>
-        </View>
-        <Icon name="navigate" size={18} color={location ? colors.success : colors.faint} />
-      </Pressable>
-
       <View style={styles.hero}>
-        <View style={styles.heroPulse}>
+        <View style={styles.heroBadge}>
           <Icon name="ambulance" size={30} color={colors.white} />
         </View>
         <Text style={styles.heroTitle}>Need an ambulance?</Text>
         <Text style={styles.heroText}>
-          Call Nepal's toll-free national ambulance number. It works from any phone with no balance and no area code.
+          Call Nepal's toll-free national ambulance number. It works from any phone, with no balance and no area code.
         </Text>
         <CallButton
           label={`Call ${nationalAmbulanceNumber} · Ambulance`}
           onPress={() => callPhone(nationalAmbulanceNumber)}
           tone="light"
+          size="lg"
           fullWidth
         />
-        <View style={styles.quickCodes}>
-          {QUICK_CODES.map((code) => (
-            <Pressable
-              key={code}
-              style={styles.quickCode}
-              onPress={() => callPhone(code)}
-              accessibilityRole="button"
-              accessibilityLabel={`Call ${code}`}
-            >
-              <Text style={styles.quickCodeNumber}>{code}</Text>
-            </Pressable>
-          ))}
-        </View>
-        <Text style={styles.quickCodeHint}>Police 100 · Fire 101 · Traffic 103</Text>
+        <Text style={styles.heroHint}>Free · 24 hours · nationwide</Text>
       </View>
 
-      <View style={styles.alertRow}>
+      <SectionHeader title="Quick dial" subtitle="Other nationwide emergency lines" />
+      <View style={styles.quickGrid}>
+        {QUICK_NUMBERS.map((entry) => (
+          <Pressable
+            key={entry.id}
+            style={styles.quickTile}
+            onPress={() => callPhone(entry.number)}
+            accessibilityRole="button"
+            accessibilityLabel={`Call ${entry.label} on ${entry.number}`}
+          >
+            <Text style={styles.quickNumber}>{entry.number}</Text>
+            <Text style={styles.quickLabel} numberOfLines={2}>
+              {entry.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
+      <View style={styles.tipRow}>
         <Icon name="alert" size={16} color={colors.primary} />
-        <Text style={styles.alertText}>
-          Tell them your location first — a call that drops after that still gets help moving.
+        <Text style={styles.tipText}>
+          Say your location first — a call that drops after that still gets help moving.
         </Text>
       </View>
+
+      <SectionHeader
+        title="Ambulance near you"
+        actionLabel="All providers"
+        onAction={() => onNavigate("Directory")}
+      />
 
       {isLocating && !nearby ? (
         <View style={styles.stateCard}>
           <ActivityIndicator color={colors.primary} />
-          <Text style={styles.stateText}>Checking the ambulance numbers for your area...</Text>
+          <Text style={styles.stateText}>Finding the ambulance numbers for your district…</Text>
         </View>
       ) : null}
 
-      {locationDenied && !isLocating ? (
+      {locationDenied && !nearby && !isLocating ? (
         <Pressable
-          style={styles.permissionCard}
+          style={styles.promptCard}
           onPress={onFindLocation}
           accessibilityRole="button"
-          accessibilityLabel="Allow location access"
+          accessibilityLabel="Allow location access to see ambulance numbers near you"
         >
-          <Icon name="location" size={18} color={colors.primary} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.permissionTitle}>Allow location to see numbers near you</Text>
-            <Text style={styles.permissionText}>
-              SwiftCare only uses your location to work out which district you are in, then shows the ambulance
-              numbers published for that area. Tap to allow.
+          <IconTile name="location" tone="primary" />
+          <View style={styles.promptBody}>
+            <Text style={styles.promptTitle}>Allow location to see numbers near you</Text>
+            <Text style={styles.promptText}>
+              SwiftCare only uses your position to work out which district you are in. Tap to allow access again.
             </Text>
           </View>
+          <Pill label="Allow" tone="primary" />
+        </Pressable>
+      ) : null}
+
+      {!nearby && !isLocating && !locationDenied ? (
+        <Pressable
+          style={styles.promptCard}
+          onPress={onFindLocation}
+          accessibilityRole="button"
+          accessibilityLabel="Share your location to see ambulance numbers near you"
+        >
+          <IconTile name="location" tone="primary" />
+          <View style={styles.promptBody}>
+            <Text style={styles.promptTitle}>Share your location</Text>
+            <Text style={styles.promptText}>
+              We will show the ambulance numbers published for the district you are in.
+            </Text>
+          </View>
+          <Icon name="chevron" size={18} color={colors.faint} />
         </Pressable>
       ) : null}
 
       {nearby ? (
         <>
-          <SectionHeader
-            title={`Ambulance near you · ${nearby.district}`}
-            actionLabel="All areas"
-            onAction={() => onNavigate("Directory")}
-          />
+          <View style={styles.districtRow}>
+            <Pill label={`${nearby.district} · ${nearby.province}`} tone="info" icon="pin" />
+            <Text style={styles.distanceText}>about {formatDistance(nearby.distanceKm)} away</Text>
+          </View>
           <Text style={styles.nearbyNote}>
-            {nearby.listings.some((item) => item.level !== "district")
-              ? "This is the district closest to you. Local lines come first, followed by the district Red Cross chapter that also covers its villages and municipalities."
-              : "This is the district closest to you. The Red Cross district chapter is the published line that covers its cities, municipalities and villages."}
+            Local lines come first, followed by the district Red Cross chapter that also covers its villages and
+            municipalities.
           </Text>
           {nearby.listings.map((item) => (
             <AmbulanceCard
@@ -156,14 +157,12 @@ export function HomeScreen({ location, isLocating, locationDenied, onFindLocatio
             />
           ))}
         </>
-      ) : (
+      ) : null}
+
+      {!nearby && isLocating === false && locationDenied === false ? (
         <>
-          <SectionHeader
-            title="Published ambulance contacts"
-            actionLabel="See all"
-            onAction={() => onNavigate("Directory")}
-          />
-          {nearbyPreview.map((item) => (
+          <SectionHeader title="Published ambulance contacts" actionLabel="See all" onAction={() => onNavigate("Directory")} />
+          {preview.map((item) => (
             <AmbulanceCard
               key={item.id}
               item={item}
@@ -173,185 +172,144 @@ export function HomeScreen({ location, isLocating, locationDenied, onFindLocatio
             />
           ))}
         </>
-      )}
+      ) : null}
 
-      <SectionHeader title="Quick access" />
-      <View style={styles.quickGrid}>
-        <QuickAction icon="list" title="Directory" onPress={() => onNavigate("Directory")} />
-        <QuickAction icon="map" title="Road routes" onPress={() => onNavigate("Routes")} />
-        <QuickAction
-          icon="globe"
-          title="All helplines"
+      <View style={styles.exploreRow}>
+        <ActionButton
+          title="Browse providers"
+          icon="list"
+          variant="secondary"
           onPress={() => onNavigate("Directory")}
         />
-        <QuickAction
-          icon="shield"
-          title="Safety tips"
-          onPress={() =>
-            Alert.alert(
-              "Before you call",
-              "1. Stay calm and speak slowly.\n2. Give the exact location or nearest landmark.\n3. Describe the patient's condition and age.\n4. Keep the line open until the operator ends the call.",
-            )
-          }
+        <ActionButton
+          title="Plan a route"
+          icon="map"
+          variant="secondary"
+          onPress={() => onNavigate("Routes")}
         />
       </View>
 
-      <NoticeCard>
-        {`Every district of Nepal is covered. Your own district's numbers are listed above once location is allowed. Villages and wards rarely publish their own ambulance line, so the district Red Cross chapter and the national code ${nationalAmbulanceNumber} are the numbers that reach them. Numbers can change — confirm availability when you call.`}
+      <NoticeCard tone="info" title={`Every district covered`}>
+        {`All 77 districts of Nepal have a published Nepal Red Cross Society chapter line. Where a village or ward publishes no number of its own, its district chapter or the national code ${nationalAmbulanceNumber} reaches it. Numbers can change — confirm availability when you call.`}
       </NoticeCard>
 
-      <Text style={styles.footerNote}>
-        Sources: {emergencyNumbers[0].source.name}, {emergencyNumbers[6].source.name} and public provider pages.
-      </Text>
+      <View style={styles.privacyRow}>
+        <Icon name="lock" size={15} color={colors.faint} />
+        <Text style={styles.privacyText}>
+          Your position is rounded to the district, stays on this device and is never stored.
+        </Text>
+      </View>
     </ScrollView>
   );
 }
 
-function QuickAction({
-  icon,
-  title,
-  onPress,
-}: {
-  icon: IconName;
-  title: string;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable style={styles.quickAction} onPress={onPress} accessibilityRole="button">
-      <View style={styles.quickIcon}>
-        <Icon name={icon} size={20} color={colors.primary} />
-      </View>
-      <Text style={styles.quickText}>{title}</Text>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
-  page: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 28 },
-  locationCard: {
-    minHeight: 68,
-    borderRadius: radius.lg,
-    backgroundColor: colors.surface,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 14,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  locationIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
-    backgroundColor: colors.primarySoft,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  locationLabel: { color: colors.muted, fontSize: 9, fontWeight: "800", letterSpacing: 1.1 },
-  locationText: { color: colors.inkSoft, fontSize: 14, fontWeight: "700", marginTop: 4 },
+  page: { paddingHorizontal: spacing.xl, paddingTop: spacing.xs, paddingBottom: spacing.xxl },
 
   hero: {
     borderRadius: radius.xl,
     backgroundColor: colors.primary,
     alignItems: "center",
-    paddingHorizontal: 22,
-    paddingVertical: 26,
-    marginBottom: 14,
+    paddingHorizontal: spacing.xl + 2,
+    paddingVertical: spacing.xxl,
+    marginBottom: spacing.sm,
     ...shadow.raised,
   },
-  heroPulse: {
+  heroBadge: {
     width: 62,
     height: 62,
-    borderRadius: 22,
+    borderRadius: radius.xl - 4,
     backgroundColor: "rgba(255,255,255,0.18)",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 14,
+    marginBottom: spacing.md,
   },
-  heroTitle: { color: colors.white, fontSize: 21, fontWeight: "900", letterSpacing: -0.4 },
+  heroTitle: { color: colors.white, fontSize: typography.size.xl + 1, fontWeight: typography.weight.black, letterSpacing: typography.letterSpacing.tight },
   heroText: {
     color: "#FFE5E7",
-    fontSize: 11.5,
-    lineHeight: 18,
+    fontSize: typography.size.sm + 0.5,
+    lineHeight: typography.lineHeight.md,
     textAlign: "center",
-    marginTop: 7,
-    marginBottom: 16,
+    marginTop: spacing.sm,
+    marginBottom: spacing.lg,
   },
-  quickCodes: { flexDirection: "row", gap: 10, marginTop: 14 },
-  quickCode: {
-    minWidth: 66,
-    height: 44,
-    borderRadius: radius.sm,
-    backgroundColor: "rgba(255,255,255,0.18)",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 14,
-  },
-  quickCodeNumber: { color: colors.white, fontSize: 17, fontWeight: "900", letterSpacing: 0.5 },
-  quickCodeHint: { color: "#FFD9DC", fontSize: 10.5, marginTop: 10, fontWeight: "600" },
+  heroHint: { color: "#FFD9DC", fontSize: typography.size.xs, marginTop: spacing.md, fontWeight: typography.weight.semibold, letterSpacing: typography.letterSpacing.wide },
 
-  alertRow: {
-    flexDirection: "row",
-    gap: 8,
-    alignItems: "flex-start",
-    paddingHorizontal: 4,
-    marginBottom: 18,
-  },
-  alertText: { flex: 1, color: colors.inkSoft, fontSize: 11.5, lineHeight: 17 },
-
-  stateCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
+  quickGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginBottom: spacing.md },
+  quickTile: {
+    flexGrow: 1,
+    flexBasis: "30%",
+    minHeight: 68,
     borderRadius: radius.md,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    marginBottom: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+    gap: spacing.xs,
   },
-  stateText: { flex: 1, color: colors.inkSoft, fontSize: 12, fontWeight: "600" },
+  quickNumber: { color: colors.primary, fontSize: typography.size.xl, fontWeight: typography.weight.black, letterSpacing: 0.5 },
+  quickLabel: { color: colors.neutral, fontSize: typography.size.xs, fontWeight: typography.weight.semibold, textAlign: "center" },
 
-  permissionCard: {
+  tipRow: {
     flexDirection: "row",
+    gap: spacing.sm,
     alignItems: "flex-start",
-    gap: 10,
+    paddingHorizontal: spacing.xs,
+    marginBottom: spacing.lg,
+  },
+  tipText: { flex: 1, color: colors.inkSoft, fontSize: typography.size.sm, lineHeight: typography.lineHeight.sm },
+
+  stateCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.lg - 2,
+    paddingVertical: spacing.lg - 2,
+    marginBottom: spacing.lg,
+  },
+  stateText: { flex: 1, color: colors.inkSoft, fontSize: typography.size.sm, fontWeight: typography.weight.semibold },
+
+  promptCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
     borderRadius: radius.md,
     backgroundColor: colors.primaryTint,
     borderWidth: 1,
     borderColor: colors.primarySoft,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    marginBottom: 18,
+    paddingHorizontal: spacing.lg - 2,
+    paddingVertical: spacing.lg - 2,
+    marginBottom: spacing.lg,
   },
-  permissionTitle: { color: colors.inkSoft, fontSize: 12.5, fontWeight: "800" },
-  permissionText: { color: colors.inkSoft, fontSize: 11, lineHeight: 16, marginTop: 4 },
+  promptBody: { flex: 1 },
+  promptTitle: { color: colors.inkSoft, fontSize: typography.size.md, fontWeight: typography.weight.bold },
+  promptText: { color: colors.inkSoft, fontSize: typography.size.sm, lineHeight: typography.lineHeight.sm, marginTop: spacing.xs + 1 },
 
-  nearbyNote: { color: colors.muted, fontSize: 11, lineHeight: 16, marginTop: -6, marginBottom: 12 },
-
-  quickGrid: { flexDirection: "row", justifyContent: "space-between", marginBottom: 16 },
-  quickAction: {
-    width: "23%",
-    height: 86,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
+  districtRow: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#EEF0F5",
+    justifyContent: "space-between",
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
   },
-  quickIcon: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: colors.primaryTint,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 6,
-  },
-  quickText: { color: "#5E6677", fontSize: 9.5, fontWeight: "700", textAlign: "center" },
+  distanceText: { color: colors.neutral, fontSize: typography.size.sm, fontWeight: typography.weight.bold },
+  nearbyNote: { color: colors.muted, fontSize: typography.size.sm, lineHeight: typography.lineHeight.sm, marginBottom: spacing.md },
 
-  footerNote: { color: colors.faint, fontSize: 10, lineHeight: 15, marginTop: 4 },
+  exploreRow: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm, marginBottom: spacing.lg },
+
+  privacyRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xs,
+    marginTop: spacing.xs,
+  },
+  privacyText: { flex: 1, color: colors.faint, fontSize: typography.size.sm, lineHeight: typography.lineHeight.sm },
 });
