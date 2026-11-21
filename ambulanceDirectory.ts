@@ -188,6 +188,30 @@ const SOURCE = {
     name: "Karnali Academy of Health Sciences — Ambulance Services",
     url: "https://kahs.edu.np/services_ambulance-services",
   },
+  sankhuwasabhaDao: {
+    name: "District Administration Office Sankhuwasabha — एम्बुलेन्स सेवा व्यवस्थापन",
+    url: "https://daosankhuwasabha.moha.gov.np/page/ema-b-l-na-sa-sa-va-va-yavasa-tha-pana-1",
+  },
+  gulmiDao: {
+    name: "District Administration Office Gulmi — एम्बुलेन्सहरुको विवरण",
+    url: "https://daogulmi.moha.gov.np/post/ema-b-l-na-sahara-ka-va-varanae",
+  },
+  dhadingpost: {
+    name: "Dhading Post — धादिङको महत्वपूर्ण फोन नम्बरहरु (phone directory)",
+    url: "https://dhadingpost.com/phone-diary/",
+  },
+  rupani: {
+    name: "Rupani Rural Municipality (Saptari) — Emergency Number",
+    url: "https://rupanimun.gov.np/content/emergency-number",
+  },
+  namastesindhupalchowk: {
+    name: "Namaste Sindhupalchowk — Ambulance Services in Nepal with their Contact Numbers",
+    url: "https://www.namastesindhupalchowk.com/blog/ambulance-service-nepal",
+  },
+  nepalnext: {
+    name: "Nepal Next — Surma Rural Municipality (Bajhang) services register",
+    url: "https://www.nepalnext.com/sajha/bajhang-surma",
+  },
 } satisfies Record<string, Source>;
 
 // ---------------------------------------------------------------------------
@@ -1555,6 +1579,288 @@ const cityAmbulanceRows: AmbulanceListing[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Rural municipality / health post / community lines
+// These are rural municipality (gaunpalika), nagarpalika and health-post
+// ambulance lines transcribed digit-for-digit from the cited public pages.
+// They are the finest granularity that is actually published: a rural
+// municipality office, a district administration office ambulance register or
+// a facility register that names the gaunpalika it belongs to. Every entry
+// links back to the page it was read from, so a number can always be checked.
+// ---------------------------------------------------------------------------
+
+const ruralAmbulanceRows: AmbulanceListing[] = [
+  // ---- Karnali · Jumla (rural municipalities) ------------------------------
+  {
+    id: "rural-jumla-patarasi-rm",
+    name: "Patarasi Rural Municipality ambulance",
+    phones: ["9863163512"],
+    district: "Jumla",
+    province: "Karnali",
+    level: "municipality",
+    note: "Rural municipality ambulance service in Jumla, listed by Karnali Academy of Health Sciences (KAHS).",
+    source: SOURCE.kahs,
+  },
+  {
+    id: "rural-jumla-tatopani-rm",
+    name: "Tatopani Rural Municipality ambulance",
+    phones: ["9848313606"],
+    district: "Jumla",
+    province: "Karnali",
+    level: "municipality",
+    note: "Rural municipality ambulance service in Jumla, listed by Karnali Academy of Health Sciences (KAHS).",
+    source: SOURCE.kahs,
+  },
+  {
+    id: "rural-jumla-hima-rm",
+    name: "Hima Rural Municipality ambulance",
+    phones: ["9866164136"],
+    district: "Jumla",
+    province: "Karnali",
+    level: "municipality",
+    note: "Rural municipality ambulance service in Jumla, listed by Karnali Academy of Health Sciences (KAHS).",
+    source: SOURCE.kahs,
+  },
+  {
+    id: "rural-jumla-tila-rm",
+    name: "Tila Rural Municipality ambulance",
+    phones: ["9868971015"],
+    district: "Jumla",
+    province: "Karnali",
+    level: "municipality",
+    note: "Rural municipality ambulance service in Jumla, listed by Karnali Academy of Health Sciences (KAHS).",
+    source: SOURCE.kahs,
+  },
+  {
+    id: "rural-jumla-sinja-rm",
+    name: "Sinja Rural Municipality ambulance",
+    phones: ["9868368203"],
+    district: "Jumla",
+    province: "Karnali",
+    level: "municipality",
+    note: "Rural municipality ambulance service in Jumla, listed by Karnali Academy of Health Sciences (KAHS).",
+    source: SOURCE.kahs,
+  },
+  {
+    id: "rural-jumla-kanakasundari-rm",
+    name: "Kanakasundari Rural Municipality ambulance",
+    phones: ["9847642209"],
+    district: "Jumla",
+    province: "Karnali",
+    level: "municipality",
+    note: "Rural municipality ambulance service in Jumla, listed by Karnali Academy of Health Sciences (KAHS).",
+    source: SOURCE.kahs,
+  },
+
+  // ---- Koshi · Sankhuwasabha (municipality ambulances) ---------------------
+  {
+    id: "rural-sankhuwasabha-khandbari-municipality",
+    name: "Khandbari Municipality ambulance",
+    phones: ["9862033913"],
+    district: "Sankhuwasabha",
+    province: "Koshi",
+    area: "Khandbari, Sankhuwasabha",
+    level: "municipality",
+    note: "Ambulance run by Khandbari Municipality; the driver line is published in the district ambulance register of the District Administration Office.",
+    source: SOURCE.sankhuwasabhaDao,
+  },
+  {
+    id: "rural-sankhuwasabha-chainpur-municipality",
+    name: "Chainpur Municipality ambulance",
+    phones: ["9842962288"],
+    district: "Sankhuwasabha",
+    province: "Koshi",
+    area: "Chainpur, Sankhuwasabha",
+    level: "municipality",
+    note: "Ambulance run by Chainpur Municipality; the driver line is published in the district ambulance register of the District Administration Office.",
+    source: SOURCE.sankhuwasabhaDao,
+  },
+  {
+    id: "rural-sankhuwasabha-madi-municipality",
+    name: "Madi Municipality ambulance",
+    phones: ["9811033002"],
+    district: "Sankhuwasabha",
+    province: "Koshi",
+    area: "Madi, Sankhuwasabha",
+    level: "municipality",
+    note: "Ambulance run by Madi Municipality; the driver line is published in the district ambulance register of the District Administration Office.",
+    source: SOURCE.sankhuwasabhaDao,
+  },
+  {
+    id: "rural-sankhuwasabha-chichila-rm",
+    name: "Chichila Rural Municipality ambulance",
+    phones: ["9742125125"],
+    district: "Sankhuwasabha",
+    province: "Koshi",
+    area: "Chichila, Sankhuwasabha",
+    level: "municipality",
+    note: "Ambulance run by Chichila Rural Municipality; the driver line is published in the district ambulance register of the District Administration Office.",
+    source: SOURCE.sankhuwasabhaDao,
+  },
+  {
+    id: "rural-sankhuwasabha-makalu-rm",
+    name: "Makalu Rural Municipality ambulance",
+    phones: ["9842099209"],
+    district: "Sankhuwasabha",
+    province: "Koshi",
+    area: "Makalu, Sankhuwasabha",
+    level: "municipality",
+    note: "Ambulance run by Makalu Rural Municipality; the driver line is published in the district ambulance register of the District Administration Office.",
+    source: SOURCE.sankhuwasabhaDao,
+  },
+
+  // ---- Lumbini · Gulmi (rural municipality / health post) ------------------
+  {
+    id: "rural-gulmi-rurukshetra-rm",
+    name: "Rurukshetra Rural Municipality ambulance",
+    phones: ["9869793304"],
+    district: "Gulmi",
+    province: "Lumbini",
+    area: "Rurukshetra, Gulmi",
+    level: "municipality",
+    note: "Ambulance run by Rurukshetra Rural Municipality; driver line published in the District Administration Office, Gulmi ambulance register.",
+    source: SOURCE.gulmiDao,
+  },
+  {
+    id: "rural-gulmi-isma-rajsthal-health-post",
+    name: "Isma Rural Municipality — Rajsthal Health Post ambulance",
+    phones: ["9867423994"],
+    district: "Gulmi",
+    province: "Lumbini",
+    area: "Rajsthal, Isma, Gulmi",
+    level: "community",
+    note: "Health-post ambulance under Isma Rural Municipality; driver line published in the District Administration Office, Gulmi ambulance register.",
+    source: SOURCE.gulmiDao,
+  },
+  {
+    id: "rural-gulmi-dhurkot-pipaldhara-health-post",
+    name: "Dhurkot Rural Municipality — Pipaldhara Health Post ambulance",
+    phones: ["9866134536"],
+    district: "Gulmi",
+    province: "Lumbini",
+    area: "Pipaldhara, Dhurkot, Gulmi",
+    level: "community",
+    note: "Health-post ambulance under Dhurkot Rural Municipality; driver line published in the District Administration Office, Gulmi ambulance register.",
+    source: SOURCE.gulmiDao,
+  },
+
+  // ---- Bagmati · Dhading (rural municipality ambulances) -------------------
+  {
+    id: "rural-dhading-thakre-rm",
+    name: "Thakre Rural Municipality ambulance",
+    phones: ["9841068149", "9851157098"],
+    district: "Dhading",
+    province: "Bagmati",
+    area: "Thakre, Dhading",
+    level: "municipality",
+    note: "Two ambulance driver lines operated by Thakre Rural Municipality, from the Dhading Post phone directory.",
+    source: SOURCE.dhadingpost,
+  },
+  {
+    id: "rural-dhading-ganga-jamuna-rm",
+    name: "Ganga Jamuna Rural Municipality — Phulkharka ambulance",
+    phones: ["9851277521"],
+    district: "Dhading",
+    province: "Bagmati",
+    area: "Phulkharka, Ganga Jamuna, Dhading",
+    level: "municipality",
+    note: "Ambulance operated by Ganga Jamuna Rural Municipality at Phulkharka, from the Dhading Post phone directory.",
+    source: SOURCE.dhadingpost,
+  },
+  {
+    id: "rural-dhading-gajuri-rm",
+    name: "Gajuri Rural Municipality ambulance",
+    phones: ["9861834063"],
+    district: "Dhading",
+    province: "Bagmati",
+    area: "Gajuri, Dhading",
+    level: "municipality",
+    note: "Ambulance operated by Gajuri Rural Municipality, from the Dhading Post phone directory.",
+    source: SOURCE.dhadingpost,
+  },
+  {
+    id: "rural-dhading-galchhi-rm",
+    name: "Galchhi Rural Municipality ambulance",
+    phones: ["9840906010"],
+    district: "Dhading",
+    province: "Bagmati",
+    area: "Galchhi, Dhading",
+    level: "municipality",
+    note: "Ambulance operated by Galchhi Rural Municipality, from the Dhading Post phone directory.",
+    source: SOURCE.dhadingpost,
+  },
+
+  // ---- Bagmati · Sindhupalchok (rural municipality ambulances) -------------
+  {
+    id: "rural-sindhupalchok-jugal-rm",
+    name: "Jugal Rural Municipality ambulance",
+    phones: ["9843964922"],
+    district: "Sindhupalchok",
+    province: "Bagmati",
+    area: "Chanaute, Jugal, Sindhupalchok",
+    level: "municipality",
+    note: "Rural municipality ambulance line listed in the Namaste Sindhupalchowk ambulance directory.",
+    source: SOURCE.namastesindhupalchowk,
+  },
+  {
+    id: "rural-sindhupalchok-bhotekoshi-rm",
+    name: "Bhotekoshi Rural Municipality ambulance",
+    phones: ["9843431705", "9865993510"],
+    district: "Sindhupalchok",
+    province: "Bagmati",
+    area: "Bhotekoshi, Sindhupalchok",
+    level: "municipality",
+    note: "Two rural municipality ambulance lines listed in the Namaste Sindhupalchowk ambulance directory.",
+    source: SOURCE.namastesindhupalchowk,
+  },
+
+  // ---- Madhesh · Bara / Mahottari / Saptari --------------------------------
+  {
+    id: "rural-bara-kolhabi-municipality",
+    name: "Kolhabi Municipality ambulance",
+    phones: ["9811188963", "9845666969", "9845266160"],
+    district: "Bara",
+    province: "Madhesh",
+    area: "Kolhabi, Bara",
+    level: "municipality",
+    note: "Municipality ambulance lines listed in the Namaste Sindhupalchowk ambulance directory.",
+    source: SOURCE.namastesindhupalchowk,
+  },
+  {
+    id: "rural-mahottari-rm",
+    name: "Mahottari Rural Municipality ambulance",
+    phones: ["9854032510"],
+    district: "Mahottari",
+    province: "Madhesh",
+    level: "municipality",
+    note: "Rural municipality ambulance line listed in the Namaste Sindhupalchowk ambulance directory.",
+    source: SOURCE.namastesindhupalchowk,
+  },
+  {
+    id: "rural-saptari-saptakoshi-municipality",
+    name: "Saptakoshi Municipality ambulance (सप्तकोशी नगरपालिका)",
+    phones: ["031-550019"],
+    district: "Saptari",
+    province: "Madhesh",
+    level: "municipality",
+    note: "Ambulance service of Saptakoshi Municipality, listed on the Rupani Rural Municipality emergency-number page.",
+    source: SOURCE.rupani,
+  },
+
+  // ---- Sudurpashchim · Bajhang (health post) -------------------------------
+  {
+    id: "rural-bajhang-daulichaur-health-post",
+    name: "Daulichaur Health Post ambulance (Surma Rural Municipality)",
+    phones: ["9868671909"],
+    district: "Bajhang",
+    province: "Sudurpashchim",
+    area: "Daulichaur, Surma, Bajhang",
+    level: "community",
+    note: "Ambulance number published for Daulichaur Health Post, ward 1, Surma Rural Municipality; from the National Health Facility Registry as republished by Nepal Next.",
+    source: SOURCE.nepalnext,
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Combined directory used by the app
 // ---------------------------------------------------------------------------
 
@@ -1569,6 +1875,7 @@ export const ambulanceDirectory: AmbulanceListing[] = auditDirectory([
   ...nrcsProvinceChapters,
   ...nrcsDistrictChapters,
   ...cityAmbulanceRows,
+  ...ruralAmbulanceRows,
 ]).kept;
 
 // ---------------------------------------------------------------------------
