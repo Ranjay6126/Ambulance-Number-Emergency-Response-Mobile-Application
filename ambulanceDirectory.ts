@@ -14,6 +14,8 @@
  * where one is not published, use the district chapter or the national 102.
  */
 
+import { auditDirectory } from "./lib/validate";
+
 export type Province =
   | "Koshi"
   | "Madhesh"
@@ -1221,11 +1223,17 @@ const nrcsDistrictChapters: AmbulanceListing[] = nrcsDistrictChapterRows.map((ro
 // Combined directory used by the app
 // ---------------------------------------------------------------------------
 
-export const ambulanceDirectory: AmbulanceListing[] = [
+/**
+ * The list the app actually shows. It is audited once at start-up: every
+ * number is validated and de-duplicated, and an entry without a usable number
+ * or with a source link that is not a plain web page is dropped instead of
+ * being offered as if it were trustworthy.
+ */
+export const ambulanceDirectory: AmbulanceListing[] = auditDirectory([
   ...providerListings,
   ...nrcsProvinceChapters,
   ...nrcsDistrictChapters,
-];
+]).kept;
 
 // ---------------------------------------------------------------------------
 // Helpers
