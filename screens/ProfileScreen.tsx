@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { colors, radius, spacing, typography } from "../theme";
 import { Icon, IconTile, InfoRow, NoticeCard, ScreenTitle, StatTile, type IconName } from "../components/ui";
 import { openUrl } from "../lib/links";
+import { pageContainer, useResponsive } from "../lib/responsive";
 import { ambulanceDirectory, countByProvince, emergencyNumbers, provincePoliceOffices, provinces } from "../ambulanceDirectory";
 import appJson from "../app.json";
 
@@ -52,6 +53,7 @@ const SECURITY_ITEMS: { icon: IconName; title: string; detail: string }[] = [
 ];
 
 export function ProfileScreen() {
+  const layout = useResponsive();
   const districtCount = useMemo(() => new Set(ambulanceDirectory.map((item) => item.district)).size, []);
   const maxProvinceCount = useMemo(
     () => Math.max(...provinces.map((name) => countByProvince(name)), 1),
@@ -67,7 +69,7 @@ export function ProfileScreen() {
   }, []);
 
   return (
-    <ScrollView contentContainerStyle={styles.page} showsVerticalScrollIndicator={false}>
+    <ScrollView contentContainerStyle={[styles.page, pageContainer(layout)]} showsVerticalScrollIndicator={false}>
       <ScreenTitle
         eyebrow="About"
         title="Coverage & trust"

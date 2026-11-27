@@ -5,6 +5,7 @@ import { colors, radius, shadow, spacing, typography } from "../theme";
 import { AmbulanceCard } from "../components/AmbulanceCard";
 import { ActionButton, CallButton, Icon, IconTile, NoticeCard, Pill, SectionHeader } from "../components/ui";
 import type { Tab } from "../lib/tabs";
+import { pageContainer, useResponsive } from "../lib/responsive";
 import { callPhone, coordsToOrigin, openMapsDirections, openUrl } from "../lib/links";
 import {
   ambulanceDirectory,
@@ -37,6 +38,7 @@ function formatDistance(km: number): string {
 }
 
 export function HomeScreen({ location, isLocating, locationDenied, onFindLocation, onNavigate }: Props) {
+  const layout = useResponsive();
   const origin = coordsToOrigin(location);
   const nearby = findNearbyArea(location);
   const preview = ambulanceDirectory.slice(0, 2);
@@ -44,7 +46,7 @@ export function HomeScreen({ location, isLocating, locationDenied, onFindLocatio
   const routeTo = (item: AmbulanceListing) => openMapsDirections({ destination: listingLocation(item), origin });
 
   return (
-    <ScrollView contentContainerStyle={styles.page} showsVerticalScrollIndicator={false}>
+    <ScrollView contentContainerStyle={[styles.page, pageContainer(layout)]} showsVerticalScrollIndicator={false}>
       <View style={styles.hero}>
         <View style={styles.heroBadge}>
           <Icon name="ambulance" size={30} color={colors.white} />

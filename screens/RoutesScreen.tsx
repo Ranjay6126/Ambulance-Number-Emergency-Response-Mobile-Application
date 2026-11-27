@@ -5,6 +5,7 @@ import { colors, radius, shadow, spacing, typography } from "../theme";
 import { ActionButton, Icon, IconTile, NoticeCard, ScreenTitle, Segmented } from "../components/ui";
 import type { TravelMode } from "../lib/links";
 import { callPhone, cleanText, coordsToOrigin, openMapsDirections, openMapsSearch } from "../lib/links";
+import { pageContainer, useResponsive } from "../lib/responsive";
 import { ambulanceDirectory, listingLocation, type AmbulanceListing } from "../ambulanceDirectory";
 
 type Props = {
@@ -20,6 +21,7 @@ const MODES: { key: TravelMode; label: string; icon: "car" | "walk" | "bus" }[] 
 ];
 
 export function RoutesScreen({ location, isLocating, onFindLocation }: Props) {
+  const layout = useResponsive();
   const [mode, setMode] = useState<TravelMode>("driving");
   const [originText, setOriginText] = useState("");
   const [destination, setDestination] = useState("");
@@ -55,7 +57,7 @@ export function RoutesScreen({ location, isLocating, onFindLocation }: Props) {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.page} showsVerticalScrollIndicator={false}>
+    <ScrollView contentContainerStyle={[styles.page, pageContainer(layout)]} showsVerticalScrollIndicator={false}>
       <ScreenTitle
         eyebrow="Plan a route"
         title="Road routes & maps"

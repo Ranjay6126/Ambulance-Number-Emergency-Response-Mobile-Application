@@ -5,6 +5,7 @@ import { colors, radius, spacing, typography } from "../theme";
 import { AmbulanceCard } from "../components/AmbulanceCard";
 import { Chip, EmptyState, Icon, NoticeCard, ScreenTitle, SearchField, Segmented } from "../components/ui";
 import { callPhone, cleanText, coordsToOrigin, openMapsDirections, openUrl } from "../lib/links";
+import { pageContainer, useResponsive } from "../lib/responsive";
 import {
   ambulanceDirectory,
   countByProvince,
@@ -29,6 +30,7 @@ const SEGMENTS: { key: Segment; label: string; icon: "list" | "phone" }[] = [
 ];
 
 export function DirectoryScreen({ location }: Props) {
+  const layout = useResponsive();
   const [segment, setSegment] = useState<Segment>("Providers");
   const [query, setQuery] = useState("");
   const [province, setProvince] = useState<"All" | Province>("All");
@@ -54,7 +56,7 @@ export function DirectoryScreen({ location }: Props) {
   const routeTo = (item: AmbulanceListing) => openMapsDirections({ destination: listingLocation(item), origin });
 
   return (
-    <ScrollView contentContainerStyle={styles.page} showsVerticalScrollIndicator={false}>
+    <ScrollView contentContainerStyle={[styles.page, pageContainer(layout)]} showsVerticalScrollIndicator={false}>
       <ScreenTitle
         eyebrow="Nepal directory"
         title="Ambulance & emergency numbers"
