@@ -2,6 +2,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { colors, radius, spacing, typography } from "../theme";
+import { callFeedback } from "../lib/haptics";
 
 /** Semantic icon names mapped onto the Ionicons set so screens stay readable. */
 const ICON_NAMES = {
@@ -184,6 +185,7 @@ export function CallButton({
   return (
     <Pressable
       onPress={onPress}
+      onPressIn={() => callFeedback()}
       disabled={disabled}
       accessibilityRole="button"
       accessibilityLabel={label}

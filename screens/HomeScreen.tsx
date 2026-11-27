@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import type { LocationObjectCoords } from "expo-location";
 import { colors, radius, shadow, spacing, typography } from "../theme";
 import { AmbulanceCard } from "../components/AmbulanceCard";
+import { PressScale } from "../components/PressScale";
 import { ActionButton, CallButton, CardGrid, Icon, IconTile, NoticeCard, Pill, SectionHeader } from "../components/ui";
 import type { Tab } from "../lib/tabs";
 import { pageContainer, useResponsive } from "../lib/responsive";
@@ -72,10 +73,11 @@ export function HomeScreen({ location, isLocating, locationDenied, onFindLocatio
       <SectionHeader title="Quick dial" subtitle="Other nationwide emergency lines" />
       <View style={styles.quickGrid}>
         {QUICK_NUMBERS.map((entry) => (
-          <Pressable
+          <PressScale
             key={entry.id}
             style={styles.quickTile}
             onPress={() => callPhone(entry.number)}
+            haptic="call"
             accessibilityRole="button"
             accessibilityLabel={`Call ${entry.label} on ${entry.number}`}
           >
@@ -83,7 +85,7 @@ export function HomeScreen({ location, isLocating, locationDenied, onFindLocatio
             <Text style={styles.quickLabel} numberOfLines={2}>
               {entry.label}
             </Text>
-          </Pressable>
+          </PressScale>
         ))}
       </View>
 

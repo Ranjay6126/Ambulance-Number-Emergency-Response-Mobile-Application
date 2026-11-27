@@ -2,6 +2,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { colors, radius, shadow, spacing, typography } from "../theme";
 import { Icon, IconTile, LevelBadge, type Tone } from "./ui";
+import { PressScale } from "./PressScale";
 import { listingLevelLabel, listingLocation, listingNote, type AmbLevel, type AmbulanceListing } from "../ambulanceDirectory";
 
 type Props = {
@@ -45,9 +46,10 @@ function AmbulanceCardBase({ item, onCall, onDirections, onOpenSource }: Props) 
 
       <View style={styles.phones}>
         {item.phones.map((phone) => (
-          <Pressable
+          <PressScale
             key={phone}
             onPress={() => onCall(phone)}
+            haptic="call"
             style={styles.phoneRow}
             accessibilityRole="button"
             accessibilityLabel={`Call ${item.name} at ${phone}`}
@@ -57,7 +59,7 @@ function AmbulanceCardBase({ item, onCall, onDirections, onOpenSource }: Props) 
             </View>
             <Text style={styles.phoneNumber}>{phone}</Text>
             <Text style={styles.phoneAction}>Call</Text>
-          </Pressable>
+          </PressScale>
         ))}
       </View>
 
