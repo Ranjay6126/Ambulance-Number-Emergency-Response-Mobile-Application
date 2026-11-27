@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import type { LocationObjectCoords } from "expo-location";
 import { colors, radius, spacing, typography } from "../theme";
@@ -53,7 +53,11 @@ export function DirectoryScreen({ location }: Props) {
     });
   }, [query, province]);
 
-  const routeTo = (item: AmbulanceListing) => openMapsDirections({ destination: listingLocation(item), origin });
+  const routeTo = useCallback(
+    (item: AmbulanceListing) => openMapsDirections({ destination: listingLocation(item), origin }),
+    [origin],
+  );
+  const openSource = useCallback((url: string) => openUrl(url, "Unable to open the source page"), []);
 
   const hasColumns = layout.columns > 1;
 
@@ -62,7 +66,7 @@ export function DirectoryScreen({ location }: Props) {
       item={item}
       onCall={callPhone}
       onDirections={routeTo}
-      onOpenSource={(url) => openUrl(url, "Unable to open the source page")}
+      onOpenSource={openSource}
     />
   );
 

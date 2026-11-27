@@ -22,7 +22,7 @@ const LEVEL_TONE: Record<AmbLevel, Tone> = {
   community: "neutral",
 };
 
-export function AmbulanceCard({ item, onCall, onDirections, onOpenSource }: Props) {
+function AmbulanceCardBase({ item, onCall, onDirections, onOpenSource }: Props) {
   const level = listingLevelLabel(item);
   const tone: Tone = item.level ? LEVEL_TONE[item.level] : "neutral";
 
@@ -86,6 +86,12 @@ export function AmbulanceCard({ item, onCall, onDirections, onOpenSource }: Prop
     </View>
   );
 }
+
+/**
+ * Memoised so a list of cards only re-renders the rows whose data or callbacks
+ * actually changed — the directory holds hundreds of rows.
+ */
+export const AmbulanceCard = React.memo(AmbulanceCardBase);
 
 const styles = StyleSheet.create({
   card: {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import type { LocationObjectCoords } from "expo-location";
 import { colors, radius, shadow, spacing, typography } from "../theme";
@@ -43,7 +43,11 @@ export function HomeScreen({ location, isLocating, locationDenied, onFindLocatio
   const nearby = findNearbyArea(location);
   const preview = ambulanceDirectory.slice(0, 2);
 
-  const routeTo = (item: AmbulanceListing) => openMapsDirections({ destination: listingLocation(item), origin });
+  const routeTo = useCallback(
+    (item: AmbulanceListing) => openMapsDirections({ destination: listingLocation(item), origin }),
+    [origin],
+  );
+  const openSource = useCallback((url: string) => openUrl(url, "Unable to open the source page"), []);
 
   return (
     <ScrollView contentContainerStyle={[styles.page, pageContainer(layout)]} showsVerticalScrollIndicator={false}>
@@ -156,7 +160,7 @@ export function HomeScreen({ location, isLocating, locationDenied, onFindLocatio
                 item={item}
                 onCall={callPhone}
                 onDirections={routeTo}
-                onOpenSource={(url) => openUrl(url, "Unable to open the source page")}
+                onOpenSource={openSource}
               />
             ))}
           </CardGrid>
@@ -173,7 +177,7 @@ export function HomeScreen({ location, isLocating, locationDenied, onFindLocatio
                 item={item}
                 onCall={callPhone}
                 onDirections={routeTo}
-                onOpenSource={(url) => openUrl(url, "Unable to open the source page")}
+                onOpenSource={openSource}
               />
             ))}
           </CardGrid>
