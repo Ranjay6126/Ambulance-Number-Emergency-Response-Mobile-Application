@@ -7,6 +7,7 @@ import { Chip, EmptyState, Icon, NoticeCard, ScreenTitle, SearchField, Segmented
 import { callPhone, cleanText, coordsToOrigin, openMapsDirections, openUrl } from "../lib/links";
 import { pageContainer, useResponsive } from "../lib/responsive";
 import { searchDirectory } from "../lib/search";
+import { useDebouncedValue } from "../lib/useDebounce";
 import {
   ambulanceDirectory,
   countByProvince,
@@ -37,8 +38,9 @@ export function DirectoryScreen({ location }: Props) {
   const [province, setProvince] = useState<"All" | Province>("All");
 
   const origin = coordsToOrigin(location);
+  const debouncedQuery = useDebouncedValue(query, 180);
 
-  const results = useMemo(() => searchDirectory(query, { province }), [query, province]);
+  const results = useMemo(() => searchDirectory(debouncedQuery, { province }), [debouncedQuery, province]);
 
   const routeTo = useCallback(
     (item: AmbulanceListing) => openMapsDirections({ destination: listingLocation(item), origin }),
