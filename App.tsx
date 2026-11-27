@@ -6,6 +6,7 @@ import * as Location from "expo-location";
 import { colors, radius, shadow, spacing, typography } from "./theme";
 import { Icon } from "./components/ui";
 import { TABS, type Tab } from "./lib/tabs";
+import { useResponsive } from "./lib/responsive";
 import { callPhone } from "./lib/links";
 import { nationalAmbulanceNumber } from "./ambulanceDirectory";
 import { HomeScreen } from "./screens/HomeScreen";
@@ -99,6 +100,8 @@ function Shell({
   goTo: (tab: Tab) => void;
 }) {
   const insets = useSafeAreaInsets();
+  const layout = useResponsive();
+  const wide = layout.isWide;
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
@@ -127,43 +130,68 @@ function Shell({
         </Pressable>
       </View>
 
-      <View style={styles.body}>
-        {tab === "Home" && (
-          <HomeScreen
-            location={location}
-            isLocating={isLocating}
-            locationDenied={locationDenied}
-            onFindLocation={findMyLocation}
-            onNavigate={goTo}
-          />
-        )}
-        {tab === "Directory" && <DirectoryScreen location={location} />}
-        {tab === "Routes" && (
-          <RoutesScreen location={location} isLocating={isLocating} onFindLocation={findMyLocation} />
-        )}
-        {tab === "Profile" && <ProfileScreen />}
+      <View style={styles.shell}>
+        {wide ? (
+          <View style={styles.rail} accessibilityRole="tablist" accessibilityLabel="Main navigation">
+            {TABS.map((item) => {
+              const active = tab === item.key;
+              return (
+                <Pressable
+                  key={item.key}
+                  style={[styles.railItem, active && styles.railItemActive]}
+                  onPress={() => goTo(item.key)}
+                  accessibilityRole="tab"
+                  accessibilityLabel={`${item.label} tab`}
+                  accessibilityState={{ selected: active }}
+                >
+                  <Icon name={item.icon} size={20} color={active ? colors.white : colors.faint} />
+                  <Text style={[styles.railLabel, active && styles.railLabelActive]}>{item.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
+
+        <View style={styles.body}>
+          {tab === "Home" && (
+            <HomeScreen
+              location={location}
+              isLocating={isLocating}
+              locationDenied={locationDenied}
+              onFindLocation={findMyLocation}
+              onNavigate={goTo}
+            />
+          )}
+          {tab === "Directory" && <DirectoryScreen location={location} />}
+          {tab === "Routes" && (
+            <RoutesScreen location={location} isLocating={isLocating} onFindLocation={findMyLocation} />
+          )}
+          {tab === "Profile" && <ProfileScreen />}
+        </View>
       </View>
 
-      <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, spacing.sm + 2) }]}>
-        {TABS.map((item) => {
-          const active = tab === item.key;
-          return (
-            <Pressable
-              key={item.key}
-              style={styles.tabItem}
-              onPress={() => goTo(item.key)}
-              accessibilityRole="tab"
-              accessibilityLabel={`${item.label} tab`}
-              accessibilityState={{ selected: active }}
-            >
-              <View style={[styles.tabIconWrap, active && styles.tabIconWrapActive]}>
-                <Icon name={item.icon} size={20} color={active ? colors.white : colors.faint} />
-              </View>
-              <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{item.label}</Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      {!wide ? (
+        <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, spacing.sm + 2) }]}>
+          {TABS.map((item) => {
+            const active = tab === item.key;
+            return (
+              <Pressable
+                key={item.key}
+                style={styles.tabItem}
+                onPress={() => goTo(item.key)}
+                accessibilityRole="tab"
+                accessibilityLabel={`${item.label} tab`}
+                accessibilityState={{ selected: active }}
+              >
+                <View style={[styles.tabIconWrap, active && styles.tabIconWrapActive]}>
+                  <Icon name={item.icon} size={20} color={active ? colors.white : colors.faint} />
+                </View>
+                <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{item.label}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -204,7 +232,28 @@ const styles = StyleSheet.create({
   },
   emergencyPillText: { color: colors.white, fontSize: typography.size.md, fontWeight: typography.weight.black, letterSpacing: 0.5 },
 
+  shell: { flex: 1, flexDirection: "row" },
   body: { flex: 1 },
+
+  rail: {
+    width: 232,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+    gap: spacing.xs + 2,
+    borderRightWidth: 1,
+    borderRightColor: colors.border,
+  },
+  railItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    minHeight: 54,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+  },
+  railItemActive: { backgroundColor: colors.primary, ...shadow.raised },
+  railLabel: { color: colors.muted, fontSize: typography.size.md, fontWeight: typography.weight.semibold },
+  railLabelActive: { color: colors.white, fontWeight: typography.weight.bold },
 
   tabBar: {
     flexDirection: "row",
