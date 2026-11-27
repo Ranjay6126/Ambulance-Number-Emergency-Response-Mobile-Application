@@ -4,6 +4,7 @@ import { colors, radius, shadow, spacing, typography } from "../theme";
 import { Icon, IconTile, LevelBadge, type Tone } from "./ui";
 import { PressScale } from "./PressScale";
 import { copyText } from "../lib/clipboard";
+import { shareProvider } from "../lib/share";
 import { listingLevelLabel, listingLocation, listingNote, type AmbLevel, type AmbulanceListing } from "../ambulanceDirectory";
 
 type Props = {
@@ -83,6 +84,14 @@ function AmbulanceCardBase({ item, onCall, onDirections, onOpenSource }: Props) 
         >
           <Icon name="navigate" size={15} color={colors.inkSoft} />
           <Text style={styles.routeText}>Route</Text>
+        </Pressable>
+        <Pressable
+          style={styles.shareBtn}
+          onPress={() => shareProvider(item)}
+          accessibilityRole="button"
+          accessibilityLabel={`Share ${item.name} and its numbers`}
+        >
+          <Icon name="share" size={17} color={colors.inkSoft} />
         </Pressable>
         <Pressable
           style={styles.sourceBtn}
@@ -168,6 +177,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   routeText: { color: colors.inkSoft, fontSize: typography.size.sm, fontWeight: typography.weight.bold },
+  shareBtn: {
+    width: 46,
+    minHeight: 46,
+    borderRadius: radius.sm,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.surfaceAlt,
+  },
   sourceBtn: {
     flex: 1,
     minHeight: 46,

@@ -35,6 +35,7 @@ const ICON_NAMES = {
   key: "key-outline",
   external: "open-outline",
   copy: "copy-outline",
+  share: "share-social-outline",
   walk: "walk-outline",
   bus: "bus-outline",
   warning: "warning-outline",
