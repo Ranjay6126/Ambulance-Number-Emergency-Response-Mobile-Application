@@ -8,6 +8,7 @@ import { callPhone, cleanText, coordsToOrigin, openMapsDirections, openUrl } fro
 import { pageContainer, useResponsive } from "../lib/responsive";
 import { searchDirectory } from "../lib/search";
 import { useDebouncedValue } from "../lib/useDebounce";
+import { useSaved } from "../lib/favorites";
 import {
   ambulanceDirectory,
   countByProvince,
@@ -33,14 +34,22 @@ const SEGMENTS: { key: Segment; label: string; icon: "list" | "phone" }[] = [
 
 export function DirectoryScreen({ location }: Props) {
   const layout = useResponsive();
+  const saved = useSaved();
   const [segment, setSegment] = useState<Segment>("Providers");
   const [query, setQuery] = useState("");
   const [province, setProvince] = useState<"All" | Province>("All");
+  const [savedOnly, setSavedOnly] = useState(false);
 
   const origin = coordsToOrigin(location);
   const debouncedQuery = useDebouncedValue(query, 180);
 
-  const results = useMemo(() => searchDirectory(debouncedQuery, { province }), [debouncedQuery, province]);
+  const results = useMemo(() => {
+    const base = searchDirectory(debouncedQuery, { province: savedOnly ? "All" : province });
+    if (!savedOnly) {
+      return base;
+    }
+    return base.filter((item) => saved.ids.includes(item.id));
+  }, [debouncedQuery, province, savedOnly, saved.ids]);
 
   const routeTo = useCallback(
     (item: AmbulanceListing) => openMapsDirections({ destination: listingLocation(item), origin }),
@@ -175,30 +184,45 @@ export function DirectoryScreen({ location }: Props) {
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
             <Chip
-              label={`All ${ambulanceDirectory.length}`}
-              active={province === "All"}
-              onPress={() => setProvince("All")}
+              label={`★ Saved ${saved.count}`}
+              active={savedOnly}
+              onPress={() => setSavedOnly((value) => !value)}
+              accessibilityLabel={savedOnly ? "Show all providers" : "Show only saved numbers"}
             />
-            {provinces.map((name) => (
-              <Chip
-                key={name}
-                label={`${name} ${countByProvince(name)}`}
-                active={province === name}
-                onPress={() => setProvince(name)}
-              />
-            ))}
+            {savedOnly ? null : (
+              <>
+                <Chip
+                  label={`All ${ambulanceDirectory.length}`}
+                  active={province === "All"}
+                  onPress={() => setProvince("All")}
+                />
+                {provinces.map((name) => (
+                  <Chip
+                    key={name}
+                    label={`${name} ${countByProvince(name)}`}
+                    active={province === name}
+                    onPress={() => setProvince(name)}
+                  />
+                ))}
+              </>
+            )}
           </ScrollView>
 
           <Text style={styles.resultCount}>
-            {results.length} {results.length === 1 ? "contact" : "contacts"}
-            {province === "All" ? "" : ` in ${province}`}
+            {results.length} {savedOnly ? "saved" : ""} {results.length === 1 ? "contact" : "contacts"}
+            {savedOnly ? "" : province === "All" ? "" : ` in ${province}`}
           </Text>
         </>
       }
       ListEmptyComponent={
         <EmptyState
-          title="No match"
-          message={`No published contact matches “${query}”. Try another district or call the national number ${nationalAmbulanceNumber}.`}
+          icon={savedOnly ? "star" : "search"}
+          title={savedOnly ? "Nothing saved yet" : "No match"}
+          message={
+            savedOnly
+              ? "Tap the star on any provider and it will be kept here, even offline."
+              : `No published contact matches “${query}”. Try another district or call the national number ${nationalAmbulanceNumber}.`
+          }
         />
       }
       ListFooterComponent={

@@ -6,6 +6,7 @@ import * as Location from "expo-location";
 import { colors, radius, shadow, spacing, typography } from "./theme";
 import { Icon } from "./components/ui";
 import { TABS, type Tab } from "./lib/tabs";
+import { SavedProvider, useSaved } from "./lib/favorites";
 import { useResponsive } from "./lib/responsive";
 import { callPhone } from "./lib/links";
 import { nationalAmbulanceNumber } from "./ambulanceDirectory";
@@ -72,14 +73,16 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <Shell
-        tab={tab}
-        location={location}
-        isLocating={isLocating}
-        locationDenied={locationDenied}
-        findMyLocation={findMyLocation}
-        goTo={goTo}
-      />
+      <SavedProvider>
+        <Shell
+          tab={tab}
+          location={location}
+          isLocating={isLocating}
+          locationDenied={locationDenied}
+          findMyLocation={findMyLocation}
+          goTo={goTo}
+        />
+      </SavedProvider>
     </SafeAreaProvider>
   );
 }
@@ -102,6 +105,7 @@ function Shell({
   const insets = useSafeAreaInsets();
   const layout = useResponsive();
   const wide = layout.isWide;
+  const savedCount = useSaved().count;
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
@@ -185,6 +189,11 @@ function Shell({
               >
                 <View style={[styles.tabIconWrap, active && styles.tabIconWrapActive]}>
                   <Icon name={item.icon} size={20} color={active ? colors.white : colors.faint} />
+                  {item.key === "Directory" && savedCount > 0 ? (
+                    <View style={styles.tabBadge}>
+                      <Text style={styles.tabBadgeText}>{savedCount > 99 ? "99+" : savedCount}</Text>
+                    </View>
+                  ) : null}
                 </View>
                 <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{item.label}</Text>
               </Pressable>
@@ -275,6 +284,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   tabIconWrapActive: { backgroundColor: colors.primary },
+  tabBadge: {
+    position: "absolute",
+    top: -4,
+    right: 2,
+    minWidth: 18,
+    height: 18,
+    borderRadius: radius.pill,
+    backgroundColor: colors.warning,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 4,
+  },
+  tabBadgeText: { color: colors.white, fontSize: 10, fontWeight: typography.weight.bold },
   tabLabel: { color: colors.faint, fontSize: typography.size.xs, fontWeight: typography.weight.semibold },
   tabLabelActive: { color: colors.primary, fontWeight: typography.weight.bold },
 });

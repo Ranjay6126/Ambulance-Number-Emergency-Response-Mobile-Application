@@ -5,6 +5,8 @@ import { Icon, IconTile, LevelBadge, type Tone } from "./ui";
 import { PressScale } from "./PressScale";
 import { copyText } from "../lib/clipboard";
 import { shareProvider } from "../lib/share";
+import { useSaved } from "../lib/favorites";
+import { tapFeedback } from "../lib/haptics";
 import { listingLevelLabel, listingLocation, listingNote, type AmbLevel, type AmbulanceListing } from "../ambulanceDirectory";
 
 type Props = {
@@ -26,6 +28,8 @@ const LEVEL_TONE: Record<AmbLevel, Tone> = {
 };
 
 function AmbulanceCardBase({ item, onCall, onDirections, onOpenSource }: Props) {
+  const { isSaved, toggle } = useSaved();
+  const saved = isSaved(item.id);
   const level = listingLevelLabel(item);
   const tone: Tone = item.level ? LEVEL_TONE[item.level] : "neutral";
 
@@ -40,6 +44,20 @@ function AmbulanceCardBase({ item, onCall, onDirections, onOpenSource }: Props) 
           </Text>
         </View>
         {level ? <LevelBadge label={level} tone={tone} /> : null}
+        <PressScale
+          onPress={() => {
+            tapFeedback();
+            toggle(item.id);
+          }}
+          haptic="none"
+          scaleTo={0.9}
+          style={styles.starBtn}
+          accessibilityRole="button"
+          accessibilityState={{ selected: saved }}
+          accessibilityLabel={saved ? `Remove ${item.name} from saved numbers` : `Save ${item.name} for quick access`}
+        >
+          <Icon name={saved ? "starFilled" : "star"} size={20} color={saved ? colors.warning : colors.faint} />
+        </PressScale>
       </View>
 
       <Text style={styles.note} numberOfLines={2}>
@@ -127,6 +145,14 @@ const styles = StyleSheet.create({
   },
   head: { flexDirection: "row", alignItems: "flex-start", gap: spacing.md },
   headText: { flex: 1 },
+  starBtn: {
+    width: 40,
+    height: 40,
+    flexShrink: 0,
+    borderRadius: radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   name: { color: colors.ink, fontSize: typography.size.md, fontWeight: typography.weight.bold, lineHeight: typography.lineHeight.md },
   location: { color: colors.muted, fontSize: typography.size.sm, marginTop: 3 },
   note: { color: colors.faint, fontSize: typography.size.sm, lineHeight: typography.lineHeight.sm, marginTop: spacing.sm + 2 },
