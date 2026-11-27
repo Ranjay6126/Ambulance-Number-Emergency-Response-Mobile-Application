@@ -8,6 +8,7 @@ import { ActionButton, CallButton, CardGrid, Icon, IconTile, NoticeCard, Pill, S
 import type { Tab } from "../lib/tabs";
 import { pageContainer, useResponsive } from "../lib/responsive";
 import { callPhone, coordsToOrigin, openMapsDirections, openUrl } from "../lib/links";
+import { shareEmergencyLocation } from "../lib/share";
 import {
   ambulanceDirectory,
   emergencyNumbers,
@@ -50,6 +51,15 @@ export function HomeScreen({ location, isLocating, locationDenied, onFindLocatio
   );
   const openSource = useCallback((url: string) => openUrl(url, "Unable to open the source page"), []);
 
+  const districtArea = nearby ? `${nearby.district}, ${nearby.province}` : undefined;
+  const shareLocation = useCallback(() => {
+    if (!location) {
+      onFindLocation();
+      return;
+    }
+    void shareEmergencyLocation(location, districtArea);
+  }, [location, districtArea, onFindLocation]);
+
   return (
     <ScrollView contentContainerStyle={[styles.page, pageContainer(layout)]} showsVerticalScrollIndicator={false}>
       <View style={styles.hero}>
@@ -69,6 +79,25 @@ export function HomeScreen({ location, isLocating, locationDenied, onFindLocatio
         />
         <Text style={styles.heroHint}>Free · 24 hours · nationwide</Text>
       </View>
+
+      <PressScale
+        style={styles.shareLocation}
+        onPress={shareLocation}
+        haptic="light"
+        accessibilityRole="button"
+        accessibilityLabel="Share an emergency message with your location"
+      >
+        <IconTile name="share" tone="primary" />
+        <View style={styles.shareLocationBody}>
+          <Text style={styles.shareLocationTitle}>Share my location</Text>
+          <Text style={styles.shareLocationText}>
+            {location
+              ? `Send ${nearby ? nearby.district : "your area"} and a map pin to a family member or the ambulance service.`
+              : "Turn on location to add a map pin to your emergency message."}
+          </Text>
+        </View>
+        <Icon name="chevron" size={18} color={colors.faint} />
+      </PressScale>
 
       <SectionHeader title="Quick dial" subtitle="Other nationwide emergency lines" />
       <View style={styles.quickGrid}>
@@ -246,6 +275,23 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   heroHint: { color: "#FFD9DC", fontSize: typography.size.xs, marginTop: spacing.md, fontWeight: typography.weight.semibold, letterSpacing: typography.letterSpacing.wide },
+
+  shareLocation: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    paddingHorizontal: spacing.lg - 2,
+    paddingVertical: spacing.md,
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  shareLocationBody: { flex: 1 },
+  shareLocationTitle: { color: colors.ink, fontSize: typography.size.md, fontWeight: typography.weight.bold },
+  shareLocationText: { color: colors.muted, fontSize: typography.size.sm, lineHeight: typography.lineHeight.sm, marginTop: spacing.xs },
 
   quickGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginBottom: spacing.md },
   quickTile: {

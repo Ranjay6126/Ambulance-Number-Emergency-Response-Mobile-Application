@@ -1,5 +1,6 @@
 import { Alert, Platform, Share } from "react-native";
-import { listingLocation, type AmbulanceListing } from "../ambulanceDirectory";
+import { listingLocation, nationalAmbulanceNumber, type AmbulanceListing } from "../ambulanceDirectory";
+import { coordsToOrigin, mapsSearchUrl } from "./links";
 
 type WebNavigator = Navigator & {
   share?: (data: { title?: string; text?: string }) => Promise<void>;
@@ -40,4 +41,25 @@ export async function shareProvider(item: AmbulanceListing): Promise<void> {
     "Shared from SwiftCare (Nepal ambulance & emergency numbers).",
   ];
   await shareMessage(lines.join("\n\n"), item.name);
+}
+
+/**
+ * A ready-to-forward emergency message. When the device has a position the
+ * message carries a map pin (already coarsened by `coordsToOrigin`), so a
+ * family member or dispatcher can open the exact spot; without one it still
+ * names the district and the national ambulance line.
+ */
+export async function shareEmergencyLocation(
+  coords: { latitude: number; longitude: number } | null,
+  area?: string,
+): Promise<void> {
+  const origin = coordsToOrigin(coords);
+  const lines = [
+    "Emergency — I need help. Please send an ambulance.",
+    area ? `I am in ${area}.` : undefined,
+    origin ? `My location: ${mapsSearchUrl(origin)}` : "I could not include a map pin — call me back to ask for directions.",
+    `Nepal ambulance: ${nationalAmbulanceNumber}`,
+    "Sent from SwiftCare.",
+  ].filter((line): line is string => Boolean(line));
+  await shareMessage(lines.join("\n\n"), "Emergency location");
 }
