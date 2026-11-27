@@ -433,6 +433,27 @@ export function ActionButton({
   );
 }
 
+/**
+ * Lays its children out in columns on wide screens and a single stack on
+ * phones. Used so card lists fill the extra width of a tablet or the web
+ * instead of stretching one card across the whole page.
+ */
+export function CardGrid({ columns, children }: { columns: number; children: React.ReactNode }) {
+  const items = React.Children.toArray(children);
+  if (columns <= 1) {
+    return <View>{items}</View>;
+  }
+  return (
+    <View style={styles.gridRow}>
+      {items.map((child, index) => (
+        <View key={index} style={styles.gridCell}>
+          {child}
+        </View>
+      ))}
+    </View>
+  );
+}
+
 export function Divider({ label }: { label?: string }) {
   if (!label) {
     return <View style={styles.divider} />;
@@ -624,6 +645,9 @@ const styles = StyleSheet.create({
   actionButtonText: { fontSize: typography.size.md, fontWeight: typography.weight.bold },
   fullWidth: { width: "100%" },
   disabled: { opacity: 0.5 },
+
+  gridRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.md },
+  gridCell: { flexGrow: 1, flexBasis: "44%", minWidth: 300 },
 
   divider: { flex: 1, height: 1, backgroundColor: colors.border },
   dividerLabelRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },

@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import type { LocationObjectCoords } from "expo-location";
 import { colors, radius, shadow, spacing, typography } from "../theme";
 import { AmbulanceCard } from "../components/AmbulanceCard";
-import { ActionButton, CallButton, Icon, IconTile, NoticeCard, Pill, SectionHeader } from "../components/ui";
+import { ActionButton, CallButton, CardGrid, Icon, IconTile, NoticeCard, Pill, SectionHeader } from "../components/ui";
 import type { Tab } from "../lib/tabs";
 import { pageContainer, useResponsive } from "../lib/responsive";
 import { callPhone, coordsToOrigin, openMapsDirections, openUrl } from "../lib/links";
@@ -149,30 +149,34 @@ export function HomeScreen({ location, isLocating, locationDenied, onFindLocatio
             Local lines come first, followed by the district Red Cross chapter that also covers its villages and
             municipalities.
           </Text>
-          {nearby.listings.map((item) => (
-            <AmbulanceCard
-              key={item.id}
-              item={item}
-              onCall={callPhone}
-              onDirections={routeTo}
-              onOpenSource={(url) => openUrl(url, "Unable to open the source page")}
-            />
-          ))}
+          <CardGrid columns={layout.columns}>
+            {nearby.listings.map((item) => (
+              <AmbulanceCard
+                key={item.id}
+                item={item}
+                onCall={callPhone}
+                onDirections={routeTo}
+                onOpenSource={(url) => openUrl(url, "Unable to open the source page")}
+              />
+            ))}
+          </CardGrid>
         </>
       ) : null}
 
       {!nearby && isLocating === false && locationDenied === false ? (
         <>
           <SectionHeader title="Published ambulance contacts" actionLabel="See all" onAction={() => onNavigate("Directory")} />
-          {preview.map((item) => (
-            <AmbulanceCard
-              key={item.id}
-              item={item}
-              onCall={callPhone}
-              onDirections={routeTo}
-              onOpenSource={(url) => openUrl(url, "Unable to open the source page")}
-            />
-          ))}
+          <CardGrid columns={layout.columns}>
+            {preview.map((item) => (
+              <AmbulanceCard
+                key={item.id}
+                item={item}
+                onCall={callPhone}
+                onDirections={routeTo}
+                onOpenSource={(url) => openUrl(url, "Unable to open the source page")}
+              />
+            ))}
+          </CardGrid>
         </>
       ) : null}
 
