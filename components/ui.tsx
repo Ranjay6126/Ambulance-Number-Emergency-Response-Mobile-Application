@@ -34,6 +34,7 @@ const ICON_NAMES = {
   analytics: "stats-chart-outline",
   key: "key-outline",
   external: "open-outline",
+  copy: "copy-outline",
   walk: "walk-outline",
   bus: "bus-outline",
   warning: "warning-outline",
