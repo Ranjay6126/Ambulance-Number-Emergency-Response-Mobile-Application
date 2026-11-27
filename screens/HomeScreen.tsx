@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import type { LocationObjectCoords } from "expo-location";
 import { colors, radius, shadow, spacing, typography } from "../theme";
@@ -9,6 +9,7 @@ import type { Tab } from "../lib/tabs";
 import { pageContainer, useResponsive } from "../lib/responsive";
 import { callPhone, coordsToOrigin, openMapsDirections, openUrl } from "../lib/links";
 import { shareEmergencyLocation } from "../lib/share";
+import { useRecents } from "../lib/recents";
 import {
   ambulanceDirectory,
   emergencyNumbers,
@@ -29,6 +30,9 @@ type Props = {
 /** Every national short code except the ambulance line, which gets the hero. */
 const QUICK_NUMBERS = emergencyNumbers.filter((entry) => entry.number !== nationalAmbulanceNumber);
 
+/** Lets the recently-viewed ids be resolved to listings without a repeated scan. */
+const DIRECTORY_BY_ID = new Map(ambulanceDirectory.map((entry) => [entry.id, entry]));
+
 function formatDistance(km: number): string {
   if (km < 1) {
     return "less than 1 km";
@@ -41,9 +45,19 @@ function formatDistance(km: number): string {
 
 export function HomeScreen({ location, isLocating, locationDenied, onFindLocation, onNavigate }: Props) {
   const layout = useResponsive();
+  const recents = useRecents();
   const origin = coordsToOrigin(location);
   const nearby = findNearbyArea(location);
   const preview = ambulanceDirectory.slice(0, 2);
+
+  const recentItems = useMemo(
+    () =>
+      recents.ids
+        .map((id) => DIRECTORY_BY_ID.get(id))
+        .filter((entry): entry is AmbulanceListing => Boolean(entry))
+        .slice(0, 4),
+    [recents.ids],
+  );
 
   const routeTo = useCallback(
     (item: AmbulanceListing) => openMapsDirections({ destination: listingLocation(item), origin }),
@@ -124,6 +138,28 @@ export function HomeScreen({ location, isLocating, locationDenied, onFindLocatio
           Say your location first — a call that drops after that still gets help moving.
         </Text>
       </View>
+
+      {recentItems.length > 0 ? (
+        <>
+          <SectionHeader
+            title="Recently viewed"
+            subtitle="Numbers you called, routed to or shared"
+            actionLabel="Clear"
+            onAction={recents.clear}
+          />
+          <CardGrid columns={layout.columns}>
+            {recentItems.map((item) => (
+              <AmbulanceCard
+                key={item.id}
+                item={item}
+                onCall={callPhone}
+                onDirections={routeTo}
+                onOpenSource={openSource}
+              />
+            ))}
+          </CardGrid>
+        </>
+      ) : null}
 
       <SectionHeader
         title="Ambulance near you"

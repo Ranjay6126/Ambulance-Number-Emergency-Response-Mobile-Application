@@ -1,10 +1,10 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { loadIds, saveIds } from "./storage";
+import React, { createContext, useContext, useMemo } from "react";
+import { useStoredList } from "./storedList";
 
 /**
  * Starred providers, shared across every screen and remembered between
- * launches. Kept in a context so a card in the directory and a curated list on
- * the home screen always agree about what is saved.
+ * launches. Kept in a context so a card in the directory and the saved filter
+ * on the same screen always agree about what is starred.
  */
 
 const STORAGE_KEY = "swiftcare.saved.v1";
@@ -22,39 +22,11 @@ type SavedContextValue = {
 const SavedContext = createContext<SavedContextValue | null>(null);
 
 export function SavedProvider({ children }: { children: React.ReactNode }) {
-  const [ids, setIds] = useState<string[]>([]);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    let live = true;
-    loadIds(STORAGE_KEY).then((stored) => {
-      if (live) {
-        setIds(stored);
-        setReady(true);
-      }
-    });
-    return () => {
-      live = false;
-    };
-  }, []);
-
-  const toggle = useCallback((id: string) => {
-    setIds((current) => {
-      const next = current.includes(id) ? current.filter((value) => value !== id) : [id, ...current];
-      void saveIds(STORAGE_KEY, next);
-      return next;
-    });
-  }, []);
+  const { ids, ready, has, toggle } = useStoredList(STORAGE_KEY);
 
   const value = useMemo<SavedContextValue>(
-    () => ({
-      ids,
-      ready,
-      count: ids.length,
-      isSaved: (id: string) => ids.includes(id),
-      toggle,
-    }),
-    [ids, ready, toggle],
+    () => ({ ids, ready, count: ids.length, isSaved: has, toggle }),
+    [ids, ready, has, toggle],
   );
 
   return <SavedContext.Provider value={value}>{children}</SavedContext.Provider>;

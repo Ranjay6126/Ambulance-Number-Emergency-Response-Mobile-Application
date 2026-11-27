@@ -6,6 +6,7 @@ import { PressScale } from "./PressScale";
 import { copyText } from "../lib/clipboard";
 import { shareProvider } from "../lib/share";
 import { useSaved } from "../lib/favorites";
+import { useRecents } from "../lib/recents";
 import { tapFeedback } from "../lib/haptics";
 import { listingLevelLabel, listingLocation, listingNote, type AmbLevel, type AmbulanceListing } from "../ambulanceDirectory";
 
@@ -29,9 +30,16 @@ const LEVEL_TONE: Record<AmbLevel, Tone> = {
 
 function AmbulanceCardBase({ item, onCall, onDirections, onOpenSource }: Props) {
   const { isSaved, toggle } = useSaved();
+  const { push } = useRecents();
   const saved = isSaved(item.id);
   const level = listingLevelLabel(item);
   const tone: Tone = item.level ? LEVEL_TONE[item.level] : "neutral";
+
+  /** Any real use of a card — calling it, routing, sharing — marks it as viewed. */
+  const viewed = (action: () => void) => {
+    push(item.id);
+    action();
+  };
 
   return (
     <View style={styles.card}>
@@ -68,7 +76,7 @@ function AmbulanceCardBase({ item, onCall, onDirections, onOpenSource }: Props) 
         {item.phones.map((phone) => (
           <View key={phone} style={styles.phoneRow}>
             <PressScale
-              onPress={() => onCall(phone)}
+              onPress={() => viewed(() => onCall(phone))}
               haptic="call"
               style={styles.phoneCall}
               accessibilityRole="button"
@@ -96,7 +104,7 @@ function AmbulanceCardBase({ item, onCall, onDirections, onOpenSource }: Props) 
       <View style={styles.actions}>
         <Pressable
           style={styles.routeBtn}
-          onPress={() => onDirections(item)}
+          onPress={() => viewed(() => onDirections(item))}
           accessibilityRole="button"
           accessibilityLabel={`Road directions to ${item.name} in ${item.district}`}
         >
@@ -105,7 +113,7 @@ function AmbulanceCardBase({ item, onCall, onDirections, onOpenSource }: Props) 
         </Pressable>
         <Pressable
           style={styles.shareBtn}
-          onPress={() => shareProvider(item)}
+          onPress={() => viewed(() => void shareProvider(item))}
           accessibilityRole="button"
           accessibilityLabel={`Share ${item.name} and its numbers`}
         >
@@ -113,7 +121,7 @@ function AmbulanceCardBase({ item, onCall, onDirections, onOpenSource }: Props) 
         </Pressable>
         <Pressable
           style={styles.sourceBtn}
-          onPress={() => onOpenSource(item.source.url)}
+          onPress={() => viewed(() => onOpenSource(item.source.url))}
           accessibilityRole="link"
           accessibilityLabel={`Open source page: ${item.source.name}`}
         >

@@ -7,6 +7,7 @@ import { colors, radius, shadow, spacing, typography } from "./theme";
 import { Icon } from "./components/ui";
 import { TABS, type Tab } from "./lib/tabs";
 import { SavedProvider, useSaved } from "./lib/favorites";
+import { RecentsProvider } from "./lib/recents";
 import { useResponsive } from "./lib/responsive";
 import { callPhone } from "./lib/links";
 import { nationalAmbulanceNumber } from "./ambulanceDirectory";
@@ -74,14 +75,16 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <SavedProvider>
-        <Shell
-          tab={tab}
-          location={location}
-          isLocating={isLocating}
-          locationDenied={locationDenied}
-          findMyLocation={findMyLocation}
-          goTo={goTo}
-        />
+        <RecentsProvider>
+          <Shell
+            tab={tab}
+            location={location}
+            isLocating={isLocating}
+            locationDenied={locationDenied}
+            findMyLocation={findMyLocation}
+            goTo={goTo}
+          />
+        </RecentsProvider>
       </SavedProvider>
     </SafeAreaProvider>
   );
