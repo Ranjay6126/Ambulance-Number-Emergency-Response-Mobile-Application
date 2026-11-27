@@ -6,6 +6,7 @@ import { AmbulanceCard } from "../components/AmbulanceCard";
 import { Chip, EmptyState, Icon, NoticeCard, ScreenTitle, SearchField, Segmented } from "../components/ui";
 import { callPhone, cleanText, coordsToOrigin, openMapsDirections, openUrl } from "../lib/links";
 import { pageContainer, useResponsive } from "../lib/responsive";
+import { searchDirectory } from "../lib/search";
 import {
   ambulanceDirectory,
   countByProvince,
@@ -37,21 +38,7 @@ export function DirectoryScreen({ location }: Props) {
 
   const origin = coordsToOrigin(location);
 
-  const results = useMemo(() => {
-    const needle = query.toLowerCase();
-    return ambulanceDirectory.filter((item) => {
-      if (province !== "All" && item.province !== province) {
-        return false;
-      }
-      if (!needle) {
-        return true;
-      }
-      const haystack = [item.name, item.area ?? "", item.district, item.province, ...item.phones]
-        .join(" ")
-        .toLowerCase();
-      return haystack.includes(needle);
-    });
-  }, [query, province]);
+  const results = useMemo(() => searchDirectory(query, { province }), [query, province]);
 
   const routeTo = useCallback(
     (item: AmbulanceListing) => openMapsDirections({ destination: listingLocation(item), origin }),
